@@ -1,0 +1,20 @@
+# Local source videos and generated HLS media. Keep the instructional files so
+# a fresh clone contains the expected directory structure.
+LocalMedia/*
+!LocalMedia/README.md
+!LocalMedia/sources/
+LocalMedia/sources/*
+!LocalMedia/sources/README.md
+
+# Xcode user-specific files.
+*.xcuserstate
+xcuserdata/
+
+# macOS and local build artifacts.
+.DS_Store
+DerivedData/
+.build/
+
+# Python cache created when validating the local development server.
+__pycache__/
+*.pyc

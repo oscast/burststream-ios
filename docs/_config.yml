@@ -1,0 +1,9 @@
+title: BurstStream Documentation
+description: A hands-on guide to HLS playback, adaptive streaming, and AVPlayer on iOS.
+theme: minima
+markdown: kramdown
+header_pages:
+  - index.md
+  - getting-started.md
+  - architecture.md
+  - experiments.md
