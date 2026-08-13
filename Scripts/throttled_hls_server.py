@@ -84,6 +84,15 @@ class BurstStreamRequestHandler(SimpleHTTPRequestHandler):
 
     server: "BurstStreamHTTPServer"
 
+    # Python's platform MIME database does not consistently recognize WebVTT.
+    # Explicit HLS types keep AVPlayer behavior independent from the host Mac.
+    extensions_map = {
+        **SimpleHTTPRequestHandler.extensions_map,
+        ".m3u8": "application/vnd.apple.mpegurl",
+        ".ts": "video/mp2t",
+        ".vtt": "text/vtt; charset=utf-8",
+    }
+
     def do_GET(self) -> None:  # noqa: N802 - inherited HTTP method name
         if self.path.split("?", 1)[0] == "/__burststream/profile":
             self._send_profile_response()

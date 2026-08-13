@@ -80,6 +80,16 @@ real problem.
 brew install ffmpeg
 ```
 
+- Optional local AI transcription with whisper.cpp:
+
+```bash
+brew install whisper-cpp
+mkdir -p ~/Library/Caches/BurstStream/Whisper
+curl -L \
+  https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin \
+  -o ~/Library/Caches/BurstStream/Whisper/ggml-small.bin
+```
+
 The current Xcode project targets iOS 26.5 and supports both iPhone and iPad.
 
 ## Quick start
@@ -94,37 +104,118 @@ open BurstStream.xcodeproj
 
 ### 2. Package a video as HLS
 
-Use the local media workspace included in the clone:
+BurstStream does not include a video because media files are usually large and
+may be copyrighted. Instead, you can use a video of your own.
+
+Start by copying an MP4, MKV, or MOV file into `LocalMedia/sources/`. For
+example:
+
+```bash
+cp ~/Movies/my-video.mp4 LocalMedia/sources/
+```
+
+Your local media workspace will then look like this:
 
 ```text
 LocalMedia/
-├── sources/   User-provided MP4, MKV, or MOV files
-└── hls/       Generated playlists and media segments
+├── sources/
+│   └── my-video.mp4       Your original video
+└── hls/                   Created by the packaging scripts
 ```
 
-Actual source and generated media are intentionally ignored by Git. The
-instructional README files remain tracked so every clone explains the workflow.
-You may alternatively pass an absolute path to a source stored elsewhere.
+Now choose one of the packaging options below. If you are following the
+streaming lessons, the **adaptive HLS** option is the recommended place to
+start.
 
-#### Single quality
+#### Option A: Single-quality HLS
+
+This creates one video quality. It is the simplest option for learning what an
+HLS playlist and its media segments look like.
 
 ```bash
 Scripts/prepare-local-hls.sh LocalMedia/sources/my-video.mp4 my-video
 ```
 
-#### Adaptive 1080p/720p/480p/360p
+The first `my-video.mp4` is your source file. The final `my-video` is the name
+of the stream that the script will create under `LocalMedia/hls/`.
+
+#### Option B: Adaptive HLS — recommended
+
+This creates 1080p, 720p, 480p, and 360p versions. `AVPlayer` can switch
+between them as network conditions change, which makes this the most useful
+option for studying adaptive bitrate streaming.
 
 ```bash
 Scripts/prepare-adaptive-hls.sh LocalMedia/sources/my-video.mp4 my-video-adaptive
 ```
 
-#### Adaptive video with Spanish and English audio
+#### Option C: Adaptive HLS with Spanish and English audio
+
+Use this when you have two synchronized videos with the same visual timeline:
+one with Spanish audio and another with English audio. The script creates one
+shared adaptive video ladder and two selectable audio tracks.
 
 ```bash
 Scripts/prepare-bilingual-hls.sh \
   LocalMedia/sources/episode-spanish.mp4 \
   LocalMedia/sources/episode-english.mp4 \
   my-video-bilingual
+```
+
+When a script finishes, it prints the path to the generated `master.m3u8`
+playlist. Your original video stays unchanged, and the generated streaming
+files appear under `LocalMedia/hls/`.
+
+> The source videos and generated HLS files stay on your Mac and are ignored by
+> Git. This prevents large media files from being uploaded if you fork the
+> repository or commit your own changes. If you prefer not to copy a large
+> video into the project, the scripts also accept its full path, such as
+> `/Users/your-name/Movies/my-video.mkv`.
+
+#### Optional: Generate subtitles with local AI
+
+If your video does not include subtitle tracks, BurstStream can transcribe its
+audio locally with whisper.cpp. The command below generates WebVTT for HLS, SRT
+for convenient editing, and detailed JSON for later review:
+
+```bash
+BURSTSTREAM_WHISPER_PROMPT="Teddy Ruxpin, Grundo, Rarilonia" \
+Scripts/transcribe-subtitles.sh \
+  LocalMedia/sources/episode-spanish.mp4 \
+  es \
+  my-video-bilingual
+```
+
+The second argument is the spoken language code. Run the script once for each
+audio language, using `es` for Spanish and `en` for English. Generated files
+appear under:
+
+```text
+LocalMedia/subtitles/my-video-bilingual/
+├── es/
+│   ├── subtitles.vtt
+│   ├── subtitles.srt
+│   └── transcription.json
+└── en/
+    ├── subtitles.vtt
+    ├── subtitles.srt
+    └── transcription.json
+```
+
+AI transcription is a starting point, not a finished publication. Review
+names, fictional vocabulary, songs, overlapping dialogue, and punctuation
+against the original audio. The prompt helps Whisper recognize uncommon names.
+
+Pass the reviewed WebVTT files to the bilingual packager to expose them as HLS
+subtitle renditions:
+
+```bash
+Scripts/prepare-bilingual-hls.sh \
+  LocalMedia/sources/episode-spanish.mp4 \
+  LocalMedia/sources/episode-english.mp4 \
+  my-video-bilingual \
+  LocalMedia/subtitles/my-video-bilingual/es/subtitles.vtt \
+  LocalMedia/subtitles/my-video-bilingual/en/subtitles.vtt
 ```
 
 The bilingual package has this structure:
@@ -137,7 +228,10 @@ LocalMedia/hls/my-video-bilingual/
 │   ├── 720p/
 │   ├── 480p/
 │   └── 360p/
-└── audio/
+├── audio/
+    ├── es/
+    └── en/
+└── subtitles/
     ├── es/
     └── en/
 ```
@@ -240,7 +334,6 @@ Derived build products
 
 ## Roadmap
 
-- WebVTT subtitle renditions and subtitle selection
 - Picture in Picture
 - AirPlay
 - Resume-progress persistence

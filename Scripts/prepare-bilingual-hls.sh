@@ -8,18 +8,26 @@ set -euo pipefail
 if [[ $# -lt 2 || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   cat <<'USAGE'
 Usage:
-  Scripts/prepare-bilingual-hls.sh LocalMedia/sources/spanish.mp4 LocalMedia/sources/english.mp4 [stream-name]
+  Scripts/prepare-bilingual-hls.sh \
+    LocalMedia/sources/spanish.mp4 \
+    LocalMedia/sources/english.mp4 \
+    [stream-name] \
+    [spanish-subtitles.vtt] \
+    [english-subtitles.vtt]
 
 Example:
   Scripts/prepare-bilingual-hls.sh \
     LocalMedia/sources/episode-spanish.mp4 \
     LocalMedia/sources/episode-english.mp4 \
-    episode-bilingual
+    episode-bilingual \
+    LocalMedia/subtitles/episode-bilingual/es/subtitles.vtt \
+    LocalMedia/subtitles/episode-bilingual/en/subtitles.vtt
 
 Output:
   LocalMedia/hls/<stream-name>/master.m3u8
   LocalMedia/hls/<stream-name>/video/{1080p,720p,480p,360p}/...
   LocalMedia/hls/<stream-name>/audio/{es,en}/...
+  LocalMedia/hls/<stream-name>/subtitles/{es,en}/...
 
 For a short development test, set a duration in seconds:
   BURSTSTREAM_HLS_TEST_DURATION=30 Scripts/prepare-bilingual-hls.sh ...
@@ -36,6 +44,8 @@ done
 
 SPANISH_INPUT="$1"
 ENGLISH_INPUT="$2"
+SPANISH_SUBTITLES="${4:-}"
+ENGLISH_SUBTITLES="${5:-}"
 
 for input in "$SPANISH_INPUT" "$ENGLISH_INPUT"; do
   if [[ ! -f "$input" ]]; then
@@ -43,6 +53,20 @@ for input in "$SPANISH_INPUT" "$ENGLISH_INPUT"; do
     exit 1
   fi
 done
+
+if [[ -n "$SPANISH_SUBTITLES" || -n "$ENGLISH_SUBTITLES" ]]; then
+  if [[ -z "$SPANISH_SUBTITLES" || -z "$ENGLISH_SUBTITLES" ]]; then
+    echo "Error: provide both Spanish and English WebVTT files." >&2
+    exit 1
+  fi
+
+  for subtitles in "$SPANISH_SUBTITLES" "$ENGLISH_SUBTITLES"; do
+    if [[ ! -f "$subtitles" ]]; then
+      echo "Error: subtitle file not found: $subtitles" >&2
+      exit 1
+    fi
+  done
+fi
 
 RAW_NAME="${3:-bilingual-video}"
 STREAM_NAME="${RAW_NAME%.*}"
@@ -64,6 +88,11 @@ done
 for language in es en; do
   mkdir -p "$TEMP_OUTPUT_DIR/audio/$language"
 done
+if [[ -n "$SPANISH_SUBTITLES" ]]; then
+  for language in es en; do
+    mkdir -p "$TEMP_OUTPUT_DIR/subtitles/$language"
+  done
+fi
 
 SPANISH_DURATION="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$SPANISH_INPUT")"
 if [[ -z "$SPANISH_DURATION" ]]; then
@@ -124,25 +153,62 @@ ffmpeg -y \
   -hls_segment_filename "$TEMP_OUTPUT_DIR/audio/%v/segment_%04d.ts" \
   "$TEMP_OUTPUT_DIR/audio/%v/playlist.m3u8"
 
+SUBTITLE_MEDIA_LINES=""
+SUBTITLE_STREAM_ATTRIBUTE=""
+
+if [[ -n "$SPANISH_SUBTITLES" ]]; then
+  # MPEG-TS uses a 90 kHz clock. Mapping WebVTT zero to the first video PTS
+  # keeps subtitle cues synchronized with AVPlayer's presentation timeline.
+  VIDEO_START_TIME="$(ffprobe -v error \
+    -show_entries format=start_time \
+    -of csv=p=0 \
+    "$TEMP_OUTPUT_DIR/video/1080p/segment_0000.ts")"
+  if [[ -z "$VIDEO_START_TIME" ]]; then
+    echo "Error: could not read the first video segment timestamp." >&2
+    exit 1
+  fi
+
+  MPEGTS_TIMESTAMP="$(python3 -c \
+    'import sys; print(round(float(sys.argv[1]) * 90000))' \
+    "$VIDEO_START_TIME")"
+
+  echo "Packaging Spanish and English WebVTT renditions..."
+  python3 Scripts/package_webvtt_hls.py \
+    "$SPANISH_SUBTITLES" \
+    "$TEMP_OUTPUT_DIR/video/1080p/playlist.m3u8" \
+    "$TEMP_OUTPUT_DIR/subtitles/es" \
+    --mpegts-timestamp "$MPEGTS_TIMESTAMP"
+  python3 Scripts/package_webvtt_hls.py \
+    "$ENGLISH_SUBTITLES" \
+    "$TEMP_OUTPUT_DIR/video/1080p/playlist.m3u8" \
+    "$TEMP_OUTPUT_DIR/subtitles/en" \
+    --mpegts-timestamp "$MPEGTS_TIMESTAMP"
+
+  SUBTITLE_MEDIA_LINES='#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subtitles",NAME="Spanish",LANGUAGE="es",AUTOSELECT=YES,DEFAULT=NO,FORCED=NO,URI="subtitles/es/playlist.m3u8"
+#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subtitles",NAME="English",LANGUAGE="en",AUTOSELECT=YES,DEFAULT=NO,FORCED=NO,URI="subtitles/en/playlist.m3u8"'
+  SUBTITLE_STREAM_ATTRIBUTE=',SUBTITLES="subtitles"'
+fi
+
 # FFmpeg can generate the child playlists, but writing this small master file
 # ourselves makes the language names, default track, and AUDIO group explicit.
-cat > "$TEMP_OUTPUT_DIR/master.m3u8" <<'MASTER'
+cat > "$TEMP_OUTPUT_DIR/master.m3u8" <<MASTER
 #EXTM3U
 #EXT-X-VERSION:6
 #EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",NAME="Latin American Spanish",LANGUAGE="es",AUTOSELECT=YES,DEFAULT=YES,URI="audio/es/playlist.m3u8"
 #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",NAME="English",LANGUAGE="en",AUTOSELECT=YES,DEFAULT=NO,URI="audio/en/playlist.m3u8"
+$SUBTITLE_MEDIA_LINES
 
-#EXT-X-STREAM-INF:BANDWIDTH=5943379,AVERAGE-BANDWIDTH=4752406,RESOLUTION=1440x1080,FRAME-RATE=29.970,CODECS="avc1.4d4028,mp4a.40.2",AUDIO="audio"
+#EXT-X-STREAM-INF:BANDWIDTH=5943379,AVERAGE-BANDWIDTH=4752406,RESOLUTION=1440x1080,FRAME-RATE=29.970,CODECS="avc1.4d4028,mp4a.40.2${SPANISH_SUBTITLES:+,wvtt}",AUDIO="audio"$SUBTITLE_STREAM_ATTRIBUTE
 video/1080p/playlist.m3u8
 
-#EXT-X-STREAM-INF:BANDWIDTH=3365343,AVERAGE-BANDWIDTH=2706441,RESOLUTION=960x720,FRAME-RATE=29.970,CODECS="avc1.4d401f,mp4a.40.2",AUDIO="audio"
+#EXT-X-STREAM-INF:BANDWIDTH=3365343,AVERAGE-BANDWIDTH=2706441,RESOLUTION=960x720,FRAME-RATE=29.970,CODECS="avc1.4d401f,mp4a.40.2${SPANISH_SUBTITLES:+,wvtt}",AUDIO="audio"$SUBTITLE_STREAM_ATTRIBUTE
 video/720p/playlist.m3u8
 
-#EXT-X-STREAM-INF:BANDWIDTH=1748155,AVERAGE-BANDWIDTH=1386979,RESOLUTION=640x480,FRAME-RATE=29.970,CODECS="avc1.4d401e,mp4a.40.2",AUDIO="audio"
+#EXT-X-STREAM-INF:BANDWIDTH=1748155,AVERAGE-BANDWIDTH=1386979,RESOLUTION=640x480,FRAME-RATE=29.970,CODECS="avc1.4d401e,mp4a.40.2${SPANISH_SUBTITLES:+,wvtt}",AUDIO="audio"$SUBTITLE_STREAM_ATTRIBUTE
 video/480p/playlist.m3u8
 
-#EXT-X-STREAM-INF:BANDWIDTH=962349,AVERAGE-BANDWIDTH=779165,RESOLUTION=480x360,FRAME-RATE=29.970,CODECS="avc1.4d401e,mp4a.40.2",AUDIO="audio"
+#EXT-X-STREAM-INF:BANDWIDTH=962349,AVERAGE-BANDWIDTH=779165,RESOLUTION=480x360,FRAME-RATE=29.970,CODECS="avc1.4d401e,mp4a.40.2${SPANISH_SUBTITLES:+,wvtt}",AUDIO="audio"$SUBTITLE_STREAM_ATTRIBUTE
 video/360p/playlist.m3u8
 MASTER
 
@@ -157,6 +223,15 @@ for playlist in \
     exit 1
   fi
 done
+
+if [[ -n "$SPANISH_SUBTITLES" ]]; then
+  for playlist in subtitles/es/playlist.m3u8 subtitles/en/playlist.m3u8; do
+    if [[ ! -s "$TEMP_OUTPUT_DIR/$playlist" ]]; then
+      echo "Error: expected subtitle playlist was not generated: $playlist" >&2
+      exit 1
+    fi
+  done
+fi
 
 rm -rf "$OUTPUT_DIR"
 mv "$TEMP_OUTPUT_DIR" "$OUTPUT_DIR"
@@ -177,3 +252,11 @@ Video variants:
 Audio renditions:
   Latin American Spanish (default), English
 DONE
+
+if [[ -n "$SPANISH_SUBTITLES" ]]; then
+  cat <<DONE
+
+Subtitle renditions:
+  Off (default), Spanish, English
+DONE
+fi

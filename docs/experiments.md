@@ -5,10 +5,22 @@ title: Experiments
 
 # Reproducible Experiments
 
-[← Bilingual audio](bilingual-audio.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
+[← WebVTT subtitles](subtitles.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
 
 Use these exercises to connect visible player behavior with AVFoundation state
 and server requests.
+
+## Subtitle selection
+
+1. Load the local bilingual stream and confirm subtitles start **Off**.
+2. Select **Spanish** and verify that timed text appears over the video.
+3. Switch to **English** while playback continues.
+4. Confirm that playback position and audio language do not change.
+5. Select a different quality limit and verify that the subtitle preference is
+   restored after the item reload.
+6. Select **Off**, change quality again, and verify that subtitles remain off.
+7. Seek across a six-second segment boundary and check that a cue spanning the
+   boundary remains synchronized.
 
 ## Playback and seeking
 

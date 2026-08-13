@@ -14,6 +14,9 @@ title: Glossary
 | Segment | Short portion of audio or video requested over HTTP |
 | Master playlist | Playlist that advertises alternative qualities, audio, or subtitles |
 | Media playlist | Playlist that lists the segments for one rendition |
+| WebVTT | Text subtitle format used by HLS subtitle renditions |
+| `X-TIMESTAMP-MAP` | WebVTT header that maps local cue time to the MPEG-TS presentation clock |
+| Legible group | AVFoundation media-selection group containing subtitles or captions |
 | Codec | Algorithm and format used to encode/decode audio or video |
 | Container | File structure that holds video, audio, subtitles, and metadata |
 | Bitrate | Number of encoded bits consumed per second |

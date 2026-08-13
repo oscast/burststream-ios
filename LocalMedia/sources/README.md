@@ -5,6 +5,27 @@ installed FFmpeg build, but MP4, MKV, and MOV are common choices.
 
 Actual media files are ignored by Git.
 
+## Local AI subtitle transcription
+
+After installing FFmpeg, whisper.cpp, and a multilingual GGML model as
+described in the project README, transcribe each spoken language separately:
+
+```bash
+Scripts/transcribe-subtitles.sh \
+  LocalMedia/sources/episode-spanish.mp4 \
+  es \
+  episode-bilingual
+
+Scripts/transcribe-subtitles.sh \
+  LocalMedia/sources/episode-english.mp4 \
+  en \
+  episode-bilingual
+```
+
+The generated files appear under
+`LocalMedia/subtitles/episode-bilingual/{es,en}/`. Always review AI-generated
+text against the original audio before publishing it.
+
 ## Single-quality HLS
 
 ```bash

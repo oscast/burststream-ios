@@ -33,6 +33,11 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var audioTracks: [AudioTrackOption] = []
     @Published private(set) var selectedAudioTrackID: String?
 
+    /// Subtitle renditions discovered in the current HLS master. Off is a
+    /// first-class option because selecting nil disables the legible group.
+    @Published private(set) var subtitleTracks: [SubtitleTrackOption] = []
+    @Published private(set) var selectedSubtitleTrackID: String?
+
     /// One player instance controls playback for the screen lifetime.
     let player: AVPlayer
 
@@ -59,6 +64,7 @@ final class PlayerViewModel: ObservableObject {
     // Cancelable task that waits before the next retry.
     private var retryTask: Task<Void, Never>?
     private var audioDiscoveryTask: Task<Void, Never>?
+    private var subtitleDiscoveryTask: Task<Void, Never>?
     private var retryAttempt = 0
     private var pendingResumeTime: TimeInterval?
     private var shouldPlayWhenReady = false
@@ -68,6 +74,11 @@ final class PlayerViewModel: ObservableObject {
     private var audioSelectionGroup: AVMediaSelectionGroup?
     private var mediaOptionsByAudioTrackID: [String: AVMediaSelectionOption] = [:]
     private var preferredAudioLanguageCode: String?
+
+    private var subtitleSelectionGroup: AVMediaSelectionGroup?
+    private var mediaOptionsBySubtitleTrackID: [String: AVMediaSelectionOption] = [:]
+    private var preferredSubtitleLanguageCode: String?
+    private var hasPreferredSubtitleSelection = false
 
     // Notifications report new entries, but fields in the current entry may keep
     // changing. Limit polling to 1 Hz.
@@ -138,6 +149,7 @@ final class PlayerViewModel: ObservableObject {
 
         retryTask?.cancel()
         audioDiscoveryTask?.cancel()
+        subtitleDiscoveryTask?.cancel()
 
         if let playbackEndedObserver {
             NotificationCenter.default.removeObserver(playbackEndedObserver)
@@ -219,6 +231,29 @@ final class PlayerViewModel: ObservableObject {
         item.select(mediaOption, in: group)
         selectedAudioTrackID = track.id
         preferredAudioLanguageCode = track.languageCode
+    }
+
+    /// Selects a subtitle rendition without replacing the AVPlayerItem.
+    /// Selecting Off passes nil to AVFoundation for the legible group.
+    func selectSubtitleTrack(_ track: SubtitleTrackOption) {
+        guard selectedSubtitleTrackID != track.id,
+              let item = player.currentItem,
+              let group = subtitleSelectionGroup else {
+            return
+        }
+
+        if track.isOff {
+            item.select(nil, in: group)
+        } else {
+            guard let mediaOption = mediaOptionsBySubtitleTrackID[track.id] else {
+                return
+            }
+            item.select(mediaOption, in: group)
+        }
+
+        selectedSubtitleTrackID = track.id
+        preferredSubtitleLanguageCode = track.languageCode
+        hasPreferredSubtitleSelection = true
     }
 
     /// Moves playback to a specific second.
@@ -379,6 +414,27 @@ final class PlayerViewModel: ObservableObject {
         }
     }
 
+    /// Loads WebVTT or other legible renditions advertised by the HLS master.
+    /// Subtitle discovery is independent from audio discovery because either
+    /// media-selection group may be absent on a valid stream.
+    private func discoverSubtitleTracks(for item: AVPlayerItem) {
+        subtitleDiscoveryTask?.cancel()
+
+        subtitleDiscoveryTask = Task { [weak self, weak item] in
+            guard let self, let item else { return }
+
+            do {
+                let group = try await item.asset.loadMediaSelectionGroup(for: .legible)
+                guard !Task.isCancelled, self.player.currentItem === item else { return }
+
+                self.installSubtitleTracks(from: group, for: item)
+            } catch {
+                guard !Task.isCancelled, self.player.currentItem === item else { return }
+                self.clearSubtitleTracks()
+            }
+        }
+    }
+
     private func installAudioTracks(
         from group: AVMediaSelectionGroup?,
         for item: AVPlayerItem
@@ -455,11 +511,80 @@ final class PlayerViewModel: ObservableObject {
             .map(String.init)
     }
 
+    private func installSubtitleTracks(
+        from group: AVMediaSelectionGroup?,
+        for item: AVPlayerItem
+    ) {
+        guard let group, !group.options.isEmpty else {
+            clearSubtitleTracks()
+            return
+        }
+
+        var tracks: [SubtitleTrackOption] = [.off]
+        var optionMap: [String: AVMediaSelectionOption] = [:]
+
+        for (index, mediaOption) in group.options.enumerated() {
+            let languageCode = normalizedLanguageCode(for: mediaOption)
+            let id = "subtitle-\(index)-\(languageCode ?? "unknown")"
+            let track = SubtitleTrackOption(
+                id: id,
+                title: subtitleTrackTitle(
+                    languageCode: languageCode,
+                    fallback: mediaOption.displayName
+                ),
+                languageCode: languageCode
+            )
+
+            tracks.append(track)
+            optionMap[id] = mediaOption
+        }
+
+        subtitleSelectionGroup = group
+        mediaOptionsBySubtitleTrackID = optionMap
+        subtitleTracks = tracks
+
+        // A user choice, including Off, survives retry and quality reloads.
+        if hasPreferredSubtitleSelection {
+            if let preferredSubtitleLanguageCode,
+               let preferredTrack = tracks.first(where: {
+                   $0.languageCode == preferredSubtitleLanguageCode
+               }),
+               let preferredOption = optionMap[preferredTrack.id] {
+                item.select(preferredOption, in: group)
+                selectedSubtitleTrackID = preferredTrack.id
+            } else {
+                item.select(nil, in: group)
+                selectedSubtitleTrackID = SubtitleTrackOption.off.id
+            }
+            return
+        }
+
+        // Subtitles are opt-in for this learning stream even if the device's
+        // accessibility or language preferences would otherwise auto-select one.
+        item.select(nil, in: group)
+        selectedSubtitleTrackID = SubtitleTrackOption.off.id
+    }
+
+    private func subtitleTrackTitle(languageCode: String?, fallback: String) -> String {
+        switch languageCode {
+        case "es": "Spanish"
+        case "en": "English"
+        default: fallback
+        }
+    }
+
     private func clearAudioTracks() {
         audioSelectionGroup = nil
         mediaOptionsByAudioTrackID = [:]
         audioTracks = []
         selectedAudioTrackID = nil
+    }
+
+    private func clearSubtitleTracks() {
+        subtitleSelectionGroup = nil
+        mediaOptionsBySubtitleTrackID = [:]
+        subtitleTracks = []
+        selectedSubtitleTrackID = nil
     }
 
     /// Stops only observations associated with the old AVPlayerItem.
@@ -546,7 +671,10 @@ final class PlayerViewModel: ObservableObject {
         stopObservingCurrentItem()
         audioDiscoveryTask?.cancel()
         audioDiscoveryTask = nil
+        subtitleDiscoveryTask?.cancel()
+        subtitleDiscoveryTask = nil
         clearAudioTracks()
+        clearSubtitleTracks()
 
         bufferedRanges = []
         playbackMetrics = .empty
@@ -630,6 +758,7 @@ final class PlayerViewModel: ObservableObject {
             updateTimeline(currentTime: player.currentTime())
             updatePlaybackMetrics(for: item)
             discoverAudioTracks(for: item)
+            discoverSubtitleTracks(for: item)
 
             if let pendingResumeTime {
                 self.pendingResumeTime = nil

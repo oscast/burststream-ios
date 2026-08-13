@@ -97,4 +97,4 @@ BurstStream/PlayerViewModel.swift
 BurstStream/ContentView.swift
 ```
 
-[← Network and ABR](network-and-abr.md) · [Next: Experiments →](experiments.md)
+[← Network and ABR](network-and-abr.md) · [Next: WebVTT subtitles →](subtitles.md)

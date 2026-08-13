@@ -11,7 +11,7 @@ code does, but why streaming applications need each behavior.
 
 The guide starts with media fundamentals and progresses through custom playback,
 buffering, failure recovery, adaptive bitrate, network experiments, diagnostics,
-and alternate audio.
+alternate audio, and subtitles.
 
 > The project is an educational client and local-development environment. It is
 > not a production CDN, transcoding platform, or media service.
@@ -34,9 +34,11 @@ and alternate audio.
    latency, offline simulation, and experiment history.
 8. [Bilingual audio](bilingual-audio.md) — shared video, alternate audio
    renditions, and `AVMediaSelectionGroup`.
-9. [Experiments](experiments.md) — reproducible exercises for studying player
+9. [WebVTT subtitles](subtitles.md) — AI transcription, HLS subtitle packaging,
+   timestamp mapping, and legible media selection.
+10. [Experiments](experiments.md) — reproducible exercises for studying player
    behavior.
-10. [Glossary](glossary.md) — concise definitions of the key terms.
+11. [Glossary](glossary.md) — concise definitions of the key terms.
 
 ## Current feature coverage
 
@@ -52,7 +54,7 @@ and alternate audio.
 | AVPlayer access/error diagnostics | Yes |
 | ABR experiment history | Yes |
 | Spanish and English alternate audio | Yes |
-| WebVTT subtitles | Next |
+| Spanish and English WebVTT subtitles | Yes |
 | Picture in Picture | Planned |
 | AirPlay | Planned |
 | Offline downloads | Planned |
