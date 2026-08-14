@@ -68,7 +68,9 @@ view:
 - item reconstruction;
 - quality preferences;
 - diagnostics snapshots;
-- alternate-audio discovery and selection.
+- alternate-audio discovery and selection;
+- subtitle discovery and selection;
+- external AirPlay state observation.
 
 Its published properties are lightweight values suitable for SwiftUI.
 AVFoundation-specific selection objects remain private.
@@ -99,6 +101,8 @@ so playback continues at the same position.
 BurstStream/ContentView.swift
 BurstStream/PlayerViewModel.swift
 BurstStream/PlayerSurface.swift
+BurstStream/AirPlayRoutePicker.swift
+BurstStream/PlaybackAudioSession.swift
 BurstStream/RetryPolicy.swift
 BurstStream/PlaybackState.swift
 ```

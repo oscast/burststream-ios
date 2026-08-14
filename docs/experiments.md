@@ -5,10 +5,20 @@ title: Experiments
 
 # Reproducible Experiments
 
-[← WebVTT subtitles](subtitles.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
+[← AirPlay](airplay.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
 
 Use these exercises to connect visible player behavior with AVFoundation state
 and server requests.
+
+## AirPlay
+
+1. Start the local server and load its LAN URL on a physical iPhone or iPad.
+2. Tap the AirPlay button and select an Apple TV.
+3. Confirm that the app reports external playback.
+4. Pause, resume, and seek from the local controls.
+5. Switch audio and subtitle languages during external playback.
+6. Return playback to the local device and confirm that the position remains.
+7. Repeat once with a `localhost` URL and explain why Apple TV cannot use it.
 
 ## Subtitle selection
 
@@ -94,4 +104,4 @@ Do not force a manual quality during this experiment: the purpose is to watch
 - Why can presentation size differ from the currently requested resource?
 - Which actions discard the buffer, and which preserve it?
 
-[← Bilingual audio](bilingual-audio.md) · [Next: Glossary →](glossary.md)
+[← AirPlay](airplay.md) · [Next: Glossary →](glossary.md)

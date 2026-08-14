@@ -121,4 +121,4 @@ BurstStream/PlayerViewModel.swift
 BurstStream/ContentView.swift
 ```
 
-[← Bilingual audio](bilingual-audio.md) · [Next: Experiments →](experiments.md)
+[← Bilingual audio](bilingual-audio.md) · [Next: AirPlay →](airplay.md)

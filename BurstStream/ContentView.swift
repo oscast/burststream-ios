@@ -34,6 +34,12 @@ struct ContentView: View {
                     }
                     .buttonStyle(.bordered)
 
+                    Button("Play Teddy Ruxpin over LAN / AirPlay") {
+                        draftStreamURLText = LocalStreams.teddyRuxpinBilingualLAN.absoluteString
+                        loadStream()
+                    }
+                    .buttonStyle(.bordered)
+
                     Button("Use sample HLS stream") {
                         draftStreamURLText = SampleStreams.bigBuckBunnyHLS.absoluteString
                         loadStream()
@@ -188,6 +194,11 @@ struct StreamPlayerView: View {
                 onRetry: viewModel.retry
             )
 
+            AirPlayPanel(
+                isExternalPlaybackActive: viewModel.isExternalPlaybackActive,
+                streamURL: video.streamURL
+            )
+
             if viewModel.audioTracks.count > 1 {
                 PlaybackAudioView(viewModel: viewModel)
             }
@@ -243,6 +254,48 @@ struct StreamPlayerView: View {
             playbackState: viewModel.playbackState,
             forceTransition: forceTransition
         )
+    }
+}
+
+private struct AirPlayPanel: View {
+    let isExternalPlaybackActive: Bool
+    let streamURL: URL
+
+    private var usesLoopbackHost: Bool {
+        guard let host = streamURL.host?.lowercased() else { return false }
+        return host == "localhost" || host == "127.0.0.1" || host == "::1"
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            AirPlayRoutePicker(isActive: isExternalPlaybackActive)
+                .frame(width: 44, height: 44)
+                .accessibilityLabel("Choose an AirPlay device")
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(isExternalPlaybackActive ? "Playing with AirPlay" : "AirPlay")
+                    .font(.headline)
+
+                Text(
+                    isExternalPlaybackActive
+                        ? "Playback is external. These controls still operate the same AVPlayer."
+                        : "Tap the AirPlay button to choose an available video receiver."
+                )
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+
+                if usesLoopbackHost {
+                    Text("localhost cannot be reached by Apple TV. For real AirPlay, load the stream using your Mac's LAN IP address.")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .padding(.top, 4)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding()
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }
 
@@ -660,6 +713,12 @@ enum LocalStreams {
     // The master references four video qualities and two alternate audio renditions.
     static let teddyRuxpinBilingualHLS = URL(
         string: "http://localhost:8000/hls/teddy-ruxpin-bilingual/master.m3u8"
+    )!
+
+    // Physical devices and AirPlay receivers cannot use the Mac's localhost.
+    // Update this address if the router assigns a different LAN IP to the Mac.
+    static let teddyRuxpinBilingualLAN = URL(
+        string: "http://192.168.1.117:8000/hls/teddy-ruxpin-bilingual/master.m3u8"
     )!
 }
 

@@ -39,5 +39,9 @@ title: Glossary
 | Sample | Metrics snapshot captured during an experiment |
 | Transition | Important change in rendition, network profile, or player state |
 | Dependency injection | Providing a dependency externally rather than constructing it internally |
+| AirPlay | Apple's system for routing media playback to a compatible receiver |
+| Playback route | The local or external destination that presents the player's media |
+| External playback | AVPlayer presentation performed by a route such as Apple TV |
+| LAN | Local area network shared by nearby devices, usually through the same router |
 
 [← Experiments](experiments.md) · [Documentation home](index.md)

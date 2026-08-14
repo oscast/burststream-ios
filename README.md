@@ -43,6 +43,14 @@ conditions.
 - Restoration of the selected language after retrying or rebuilding an
   `AVPlayerItem`
 
+### Subtitles and AirPlay
+
+- Spanish and English segmented WebVTT subtitle renditions
+- Native AirPlay route selection with `AVRoutePickerView`
+- External playback state observed from the existing `AVPlayer`
+- LAN-aware guidance when `localhost` cannot be reached by Apple TV
+- End-to-end validation with a physical iPhone, Apple TV, and Mac-hosted HLS
+
 ### Local streaming tools
 
 - FFmpeg scripts for single-quality, adaptive, and bilingual HLS packaging
@@ -90,7 +98,7 @@ curl -L \
   -o ~/Library/Caches/BurstStream/Whisper/ggml-small.bin
 ```
 
-The current Xcode project targets iOS 26.5 and supports both iPhone and iPad.
+The current Xcode project targets iOS 18.0 and supports both iPhone and iPad.
 
 ## Quick start
 
@@ -315,8 +323,8 @@ After GitHub Pages is enabled, the published site is available at:
 [https://oscast.github.io/burststream-ios/](https://oscast.github.io/burststream-ios/)
 
 It covers HLS fundamentals, architecture, playback and buffering, reliability,
-ABR, network experiments, diagnostics, bilingual audio, and reproducible study
-exercises.
+ABR, network experiments, diagnostics, bilingual audio, subtitles, AirPlay, and
+reproducible study exercises.
 
 ## Media and repository policy
 
@@ -335,7 +343,6 @@ Derived build products
 ## Roadmap
 
 - Picture in Picture
-- AirPlay
 - Resume-progress persistence
 - Offline HLS downloads
 - Live-stream behavior

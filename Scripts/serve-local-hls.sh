@@ -53,8 +53,11 @@ INFO
 if [[ -n "$LAN_IP" ]]; then
   cat <<INFO
 
-Real iPhone URL pattern, same Wi-Fi required:
+Physical iPhone/iPad and AirPlay URL pattern, same Wi-Fi required:
   http://$LAN_IP:$PORT/hls/<stream-name>/master.m3u8
+
+Use this LAN URL when sending playback to Apple TV. localhost refers to the
+device that reads the URL, so it cannot identify this Mac from Apple TV.
 INFO
 fi
 

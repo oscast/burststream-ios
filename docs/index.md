@@ -36,9 +36,14 @@ alternate audio, and subtitles.
    renditions, and `AVMediaSelectionGroup`.
 9. [WebVTT subtitles](subtitles.md) — AI transcription, HLS subtitle packaging,
    timestamp mapping, and legible media selection.
-10. [Experiments](experiments.md) — reproducible exercises for studying player
-   behavior.
-11. [Glossary](glossary.md) — concise definitions of the key terms.
+10. [AirPlay](airplay.md) — system route selection, external playback state,
+    and LAN delivery to Apple TV.
+11. [Professional readiness roadmap](professional-roadmap.md) — prioritized
+    client-side work for lifecycle handling, persistence, recovery, QoE,
+    testing, accessibility, PiP, and offline playback.
+12. [Experiments](experiments.md) — reproducible exercises for studying player
+    behavior.
+13. [Glossary](glossary.md) — concise definitions of the key terms.
 
 ## Current feature coverage
 
@@ -55,8 +60,8 @@ alternate audio, and subtitles.
 | ABR experiment history | Yes |
 | Spanish and English alternate audio | Yes |
 | Spanish and English WebVTT subtitles | Yes |
+| AirPlay route selection and external playback state | Yes — validated on iPhone and Apple TV |
 | Picture in Picture | Planned |
-| AirPlay | Planned |
 | Offline downloads | Planned |
 
 ## How to use these documents

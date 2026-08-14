@@ -38,6 +38,10 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var subtitleTracks: [SubtitleTrackOption] = []
     @Published private(set) var selectedSubtitleTrackID: String?
 
+    /// True when AVPlayer is presenting through AirPlay or another external
+    /// playback route instead of rendering only on this device.
+    @Published private(set) var isExternalPlaybackActive = false
+
     /// One player instance controls playback for the screen lifetime.
     let player: AVPlayer
 
@@ -49,6 +53,7 @@ final class PlayerViewModel: ObservableObject {
     // KVO delivers AVPlayer and AVPlayerItem property changes.
     private var itemStatusObservation: NSKeyValueObservation?
     private var timeControlStatusObservation: NSKeyValueObservation?
+    private var externalPlaybackObservation: NSKeyValueObservation?
     private var loadedTimeRangesObservation: NSKeyValueObservation?
     private var presentationSizeObservation: NSKeyValueObservation?
 
@@ -130,6 +135,12 @@ final class PlayerViewModel: ObservableObject {
         Self.apply(.automatic, to: item)
         player = AVPlayer(playerItem: item)
 
+        // AVPlayer already knows how to hand an HLS URL and playback state to an
+        // AirPlay receiver. These flags make that capability explicit.
+        player.allowsExternalPlayback = true
+        player.usesExternalPlaybackWhileExternalScreenIsActive = true
+        PlaybackAudioSession.configure()
+
         observePlayer()
         observe(item: item)
         observeTimeline()
@@ -140,6 +151,7 @@ final class PlayerViewModel: ObservableObject {
         // into a released object and avoid retaining unnecessary resources.
         itemStatusObservation?.invalidate()
         timeControlStatusObservation?.invalidate()
+        externalPlaybackObservation?.invalidate()
         loadedTimeRangesObservation?.invalidate()
         presentationSizeObservation?.invalidate()
 
@@ -304,6 +316,18 @@ final class PlayerViewModel: ObservableObject {
         timeControlStatusObservation = player.observe(\.timeControlStatus, options: [.initial, .new]) { [weak self] player, _ in
             Task { @MainActor [weak self] in
                 self?.handleTimeControlStatus(player.timeControlStatus)
+            }
+        }
+
+
+        // This property changes when playback moves between the local screen and
+        // an AirPlay receiver. The same AVPlayer and controls remain in use.
+        externalPlaybackObservation = player.observe(
+            \.isExternalPlaybackActive,
+            options: [.initial, .new]
+        ) { [weak self] player, _ in
+            Task { @MainActor [weak self] in
+                self?.isExternalPlaybackActive = player.isExternalPlaybackActive
             }
         }
     }
