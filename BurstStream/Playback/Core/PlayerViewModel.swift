@@ -42,8 +42,10 @@ final class PlayerViewModel: ObservableObject {
     /// playback route instead of rendering only on this device.
     @Published private(set) var isExternalPlaybackActive = false
 
-    /// One player instance controls playback for the screen lifetime.
-    let player: AVPlayer
+    /// One player normally controls the screen lifetime. A rare media-services
+    /// reset requires recreating the AVPlayer itself, so the reference is
+    /// published for PlayerSurface to receive the replacement.
+    @Published private(set) var player: AVPlayer
 
     // Dependencies needed to rebuild the item and control retries.
     private let streamURL: URL
@@ -137,13 +139,19 @@ final class PlayerViewModel: ObservableObject {
 
         // AVPlayer already knows how to hand an HLS URL and playback state to an
         // AirPlay receiver. These flags make that capability explicit.
-        player.allowsExternalPlayback = true
-        player.usesExternalPlaybackWhileExternalScreenIsActive = true
+        configureExternalPlayback(for: player)
         PlaybackAudioSession.configure()
 
         observePlayer()
         observe(item: item)
         observeTimeline()
+    }
+
+    /// Applies the AirPlay policy to both the original player and any player
+    /// recreated after a media-services reset.
+    private func configureExternalPlayback(for player: AVPlayer) {
+        player.allowsExternalPlayback = true
+        player.usesExternalPlaybackWhileExternalScreenIsActive = true
     }
 
     deinit {
@@ -156,7 +164,12 @@ final class PlayerViewModel: ObservableObject {
         presentationSizeObservation?.invalidate()
 
         if let periodicTimeObserver {
-            player.removeTimeObserver(periodicTimeObserver)
+            // PlayerViewModel is main-actor isolated, but Swift deinitializers
+            // are nonisolated. The object is created and released by SwiftUI on
+            // the main actor, so explicitly preserve that cleanup contract.
+            MainActor.assumeIsolated {
+                player.removeTimeObserver(periodicTimeObserver)
+            }
         }
 
         retryTask?.cancel()
@@ -190,11 +203,58 @@ final class PlayerViewModel: ObservableObject {
             seek(to: 0)
         }
 
+        // Take audio focus only when playback is actually requested. Apple
+        // recommends delaying activation so merely opening a player does not
+        // interrupt another app's audio.
+        _ = PlaybackAudioSession.activate()
         player.play()
     }
 
     func pause() {
         player.pause()
+    }
+
+    /// Recreates AVFoundation playback objects after the system media service
+    /// restarts. The restored item stays paused because a reset must not begin
+    /// playback without a later user action.
+    func recoverAfterMediaServicesReset() {
+        let resumeTime = currentTime
+
+        retryTask?.cancel()
+        retryTask = nil
+        audioDiscoveryTask?.cancel()
+        audioDiscoveryTask = nil
+        subtitleDiscoveryTask?.cancel()
+        subtitleDiscoveryTask = nil
+
+        stopObservingCurrentItem()
+        stopObservingPlayer()
+        player.pause()
+
+        clearAudioTracks()
+        clearSubtitleTracks()
+        bufferedRanges = []
+        playbackMetrics = .empty
+        lastMetricsRefreshDate = .distantPast
+        duration = 0
+        reachedEnd = false
+        activeSeekID = nil
+        pendingResumeTime = resumeTime > 0 ? resumeTime : nil
+        shouldPlayWhenReady = false
+        playbackState = .loading
+
+        PlaybackAudioSession.configure()
+
+        let newItem = AVPlayerItem(url: streamURL)
+        Self.apply(qualityLimit, to: newItem)
+
+        let newPlayer = AVPlayer(playerItem: newItem)
+        configureExternalPlayback(for: newPlayer)
+        player = newPlayer
+
+        observePlayer()
+        observe(item: newItem)
+        observeTimeline()
     }
 
     /// User-requested retry after automatic retries are exhausted.
@@ -329,6 +389,21 @@ final class PlayerViewModel: ObservableObject {
             Task { @MainActor [weak self] in
                 self?.isExternalPlaybackActive = player.isExternalPlaybackActive
             }
+        }
+    }
+
+    /// Removes observations tied to the current AVPlayer before replacing the
+    /// engine after a media-services reset.
+    private func stopObservingPlayer() {
+        timeControlStatusObservation?.invalidate()
+        timeControlStatusObservation = nil
+
+        externalPlaybackObservation?.invalidate()
+        externalPlaybackObservation = nil
+
+        if let periodicTimeObserver {
+            player.removeTimeObserver(periodicTimeObserver)
+            self.periodicTimeObserver = nil
         }
     }
 
@@ -757,6 +832,14 @@ final class PlayerViewModel: ObservableObject {
             duration = itemDuration
         }
 
+        // Some HLS items become ready before publishing a finite duration. Keep
+        // the saved position until seeking is actually possible instead of
+        // discarding it during that short window.
+        if let pendingResumeTime, duration > 0 {
+            self.pendingResumeTime = nil
+            seek(to: pendingResumeTime)
+        }
+
         refreshPlaybackMetricsIfNeeded()
     }
 
@@ -783,11 +866,6 @@ final class PlayerViewModel: ObservableObject {
             updatePlaybackMetrics(for: item)
             discoverAudioTracks(for: item)
             discoverSubtitleTracks(for: item)
-
-            if let pendingResumeTime {
-                self.pendingResumeTime = nil
-                seek(to: pendingResumeTime)
-            }
 
             if shouldPlayWhenReady {
                 shouldPlayWhenReady = false

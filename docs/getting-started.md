@@ -7,7 +7,17 @@ title: Getting Started
 
 [Documentation home](index.md) · [Next: HLS fundamentals →](hls-fundamentals.md)
 
+If this is your first streaming project, you are in the right place. You do not
+need a cloud server, a paid video service, or previous FFmpeg experience to
+begin. In this chapter you will take one video you are allowed to use, turn it
+into HLS, serve it from your Mac, and open it in BurstStream.
+
+Follow the sections in order the first time. Later, you can return directly to
+the command you need.
+
 ## Requirements
+
+Here is the small set of tools you need before starting:
 
 - macOS and Xcode
 - An iOS Simulator or physical iPhone/iPad

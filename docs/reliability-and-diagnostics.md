@@ -7,6 +7,14 @@ title: Reliability and Diagnostics
 
 [← Playback and buffering](playback-and-buffering.md) · [Documentation home](index.md) · [Next: Adaptive streaming →](adaptive-streaming.md)
 
+Networks fail, servers restart, and individual media requests sometimes arrive
+late. A useful streaming app should explain what is happening and recover when
+recovery is safe.
+
+BurstStream lets you observe these situations instead of hiding them. You can
+see retries, throughput, requested resources, and recent errors while the video
+continues playing.
+
 ## Automatic retry
 
 Streaming failures may be temporary. BurstStream retries after progressively
@@ -72,10 +80,10 @@ experiments, the most useful indicators are:
 ## Related files
 
 ```text
-BurstStream/RetryPolicy.swift
-BurstStream/PlayerViewModel.swift
-BurstStream/PlaybackMetrics.swift
-BurstStream/PlaybackDiagnosticsView.swift
+BurstStream/Playback/Core/RetryPolicy.swift
+BurstStream/Playback/Core/PlayerViewModel.swift
+BurstStream/Diagnostics/PlaybackMetrics.swift
+BurstStream/Diagnostics/PlaybackDiagnosticsView.swift
 ```
 
 [← Playback and buffering](playback-and-buffering.md) · [Next: Adaptive streaming →](adaptive-streaming.md)

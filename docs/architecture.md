@@ -7,6 +7,13 @@ title: Player Architecture
 
 [← HLS fundamentals](hls-fundamentals.md) · [Documentation home](index.md) · [Next: Playback and buffering →](playback-and-buffering.md)
 
+Names such as `AVPlayerItem`, `AVPlayer`, and `AVPlayerLayer` look very similar
+when you first meet them. Each one has a small, different job. Once those jobs
+are clear, the rest of the player becomes much easier to follow.
+
+This project deliberately uses only a few layers. The goal is readable code you
+can study, not an architecture diagram filled with unnecessary abstractions.
+
 ## Design goal
 
 BurstStream keeps playback logic out of SwiftUI views without creating layers
@@ -20,6 +27,14 @@ PlayerViewModel
 AVPlayer / AVPlayerItem
     ↓ presented by
 PlayerSurface / AVPlayerLayer
+    ↓ provides source layer to
+PictureInPictureController
+
+System notifications / scenePhase
+    ↓ interpreted by
+PlaybackLifecycleController
+    ↓ sends safe play, pause, and recovery actions to
+PlayerViewModel
 ```
 
 ## AVPlayerItem
@@ -55,6 +70,10 @@ most observations intact.
 `AVPlayerLayer` renders video frames. `PlayerSurface` wraps it for SwiftUI. The
 layer does not provide controls, so BurstStream can build its own interface and
 observe the exact behavior being studied.
+
+The same layer is also the inline source for `AVPictureInPictureController`.
+PiP therefore keeps the existing `AVPlayer` and timeline instead of creating a
+second playback engine.
 
 ## PlayerViewModel
 
@@ -95,16 +114,43 @@ Portrait uses one column. iPad landscape places video and controls on the left
 and technical information on the right. Rotation does not recreate the player,
 so playback continues at the same position.
 
+## Source organization
+
+The source tree is grouped by feature rather than broad folders such as
+`Managers` or `Helpers`:
+
+```text
+BurstStream/
+├── App/
+├── Streaming/
+├── Playback/
+│   ├── Core/
+│   ├── UI/
+│   ├── MediaSelection/
+│   └── SystemFeatures/
+├── NetworkSimulation/
+├── Diagnostics/
+└── Resources/
+```
+
+`Streaming` describes selectable HLS sources. `Playback` owns AVPlayer behavior
+and its interface. `NetworkSimulation` talks only to the development throttling
+server. `Diagnostics` records and presents what happened during playback.
+
 ## Related files
 
 ```text
-BurstStream/ContentView.swift
-BurstStream/PlayerViewModel.swift
-BurstStream/PlayerSurface.swift
-BurstStream/AirPlayRoutePicker.swift
-BurstStream/PlaybackAudioSession.swift
-BurstStream/RetryPolicy.swift
-BurstStream/PlaybackState.swift
+BurstStream/App/ContentView.swift
+BurstStream/Streaming/SampleStreams.swift
+BurstStream/Playback/UI/StreamPlayerView.swift
+BurstStream/Playback/Core/PlayerViewModel.swift
+BurstStream/Playback/UI/PlayerSurface.swift
+BurstStream/Playback/SystemFeatures/AirPlayRoutePicker.swift
+BurstStream/Playback/SystemFeatures/PictureInPictureController.swift
+BurstStream/Playback/SystemFeatures/PlaybackLifecycleController.swift
+BurstStream/Playback/SystemFeatures/PlaybackAudioSession.swift
+BurstStream/Playback/Core/RetryPolicy.swift
+BurstStream/Playback/Core/PlaybackState.swift
 ```
 
 [← HLS fundamentals](hls-fundamentals.md) · [Next: Playback and buffering →](playback-and-buffering.md)

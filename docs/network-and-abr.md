@@ -7,6 +7,13 @@ title: Network and ABR Experiments
 
 [← Adaptive streaming](adaptive-streaming.md) · [Documentation home](index.md) · [Next: Bilingual audio →](bilingual-audio.md)
 
+You should not have to wait for bad Wi-Fi to study bad Wi-Fi. BurstStream's
+local server can intentionally slow requests, add delay, or behave as if it is
+offline while the app is running.
+
+These controls are experiments, not production networking features. They give
+you a repeatable way to watch buffering and ABR decisions on your own Mac.
+
 ## Why simulate the network?
 
 ABR cannot be studied reliably when every request uses an unrestricted local
@@ -37,7 +44,7 @@ GET  /__burststream/profile
 POST /__burststream/profile
 ```
 
-`LocalNetworkConditioner` calls it only for local stream URLs. A production
+`NetworkConditionerClient` calls it only for local stream URLs. A production
 streaming server would not expose this testing interface.
 
 ## Throttling behavior
@@ -70,11 +77,11 @@ likely to consume its buffer, stall, or move down the ladder.
 ```text
 Scripts/throttled_hls_server.py
 Scripts/serve-local-hls.sh
-BurstStream/LocalNetworkProfile.swift
-BurstStream/LocalNetworkConditioner.swift
-BurstStream/ABRHistorySample.swift
-BurstStream/ABRHistoryRecorder.swift
-BurstStream/ABRHistoryView.swift
+BurstStream/NetworkSimulation/NetworkProfile.swift
+BurstStream/NetworkSimulation/NetworkConditionerClient.swift
+BurstStream/Diagnostics/ABRHistorySample.swift
+BurstStream/Diagnostics/ABRHistoryRecorder.swift
+BurstStream/Diagnostics/ABRHistoryView.swift
 ```
 
 [← Adaptive streaming](adaptive-streaming.md) · [Next: Bilingual audio →](bilingual-audio.md)

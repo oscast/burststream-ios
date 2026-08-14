@@ -7,10 +7,16 @@ title: Professional Readiness Roadmap
 
 [← Documentation home](index.md)
 
+You do not need every item on this page before the project is valuable. Think
+of the roadmap as a menu for growing the learning lab into a polished portfolio
+app. Complete one priority, test it, document what you learned, and then choose
+the next one.
+
 BurstStream already demonstrates the core mechanics of an iOS streaming
 client: HLS VOD playback, a four-level adaptive bitrate ladder, custom
 controls, buffer visualization, retry with exponential backoff, playback
-diagnostics, network experiments, bilingual audio and subtitles, and AirPlay.
+diagnostics, network experiments, bilingual audio and subtitles, AirPlay,
+Picture in Picture, and interruption handling.
 
 AirPlay has also been validated end to end on physical hardware using an
 iPhone 14 Pro, Apple TV, and the Mac-hosted bilingual HLS stream over LAN.
@@ -23,23 +29,24 @@ lab so every client behavior can be reproduced without external services.
 
 ## Priority 1: Interruptions and lifecycle
 
-The app configures a long-form playback audio session for AirPlay, but it still
-needs explicit policies for system interruptions and route changes.
+The interruption and lifecycle implementation is complete in code. Physical
+hardware validation remains because the Simulator cannot faithfully reproduce
+every call, route disconnection, or media-server reset.
 
-- [ ] Observe `AVAudioSession.interruptionNotification`.
-- [ ] Pause when an interruption begins.
-- [ ] Remember whether playback was active before the interruption.
-- [ ] Resume only when the interruption options allow it and the user had not
+- [x] Observe `AVAudioSession.interruptionNotification`.
+- [x] Pause when an interruption begins.
+- [x] Remember whether playback was active before the interruption.
+- [x] Resume only when the interruption options allow it and the user had not
       paused manually.
-- [ ] Observe `AVAudioSession.routeChangeNotification`.
-- [ ] Pause when headphones are unexpectedly disconnected.
-- [ ] Keep state synchronized when switching between the device, Bluetooth,
+- [x] Observe `AVAudioSession.routeChangeNotification`.
+- [x] Pause when headphones are unexpectedly disconnected.
+- [x] Keep state synchronized when switching between the device, Bluetooth,
       and AirPlay.
-- [ ] Handle `mediaServicesWereLostNotification` and
+- [x] Handle `mediaServicesWereLostNotification` and
       `mediaServicesWereResetNotification`.
-- [ ] Restore the item, position, quality limit, audio, and subtitles after a
+- [x] Restore the item, position, quality limit, audio, and subtitles after a
       media-services reset.
-- [ ] Define foreground, inactive, and background behavior with SwiftUI
+- [x] Define foreground, inactive, and background behavior with SwiftUI
       `scenePhase`.
 - [ ] Test calls, Siri, alarms, route changes, device locking, and AirPlay
       disconnection on physical hardware.
@@ -171,14 +178,14 @@ exported.
 
 ## Priority 7: Picture in Picture
 
-AirPlay is complete, so Picture in Picture is the next platform playback
-feature.
+AirPlay is complete, and the first Picture in Picture implementation is now
+ready for physical-device validation.
 
-- [ ] Add `AVPictureInPictureController` around the existing player layer.
-- [ ] Observe PiP availability and active state.
-- [ ] Keep custom controls synchronized with PiP controls.
-- [ ] Restore the app interface when PiP stops.
-- [ ] Handle background and foreground transitions without rebuilding the item.
+- [x] Add `AVPictureInPictureController` around the existing player layer.
+- [x] Observe PiP availability and active state.
+- [x] Keep custom controls synchronized with PiP controls.
+- [x] Restore the app interface when PiP stops.
+- [x] Handle background and foreground transitions without rebuilding the item.
 - [ ] Test PiP together with alternate audio, subtitles, retry, and AirPlay.
 
 ## Priority 8: Offline HLS

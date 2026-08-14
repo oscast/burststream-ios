@@ -5,7 +5,14 @@ title: Bilingual Audio
 
 # Bilingual Audio
 
-[← Network and ABR](network-and-abr.md) · [Documentation home](index.md) · [Next: Experiments →](experiments.md)
+[← Network and ABR](network-and-abr.md) · [Documentation home](index.md) · [Next: WebVTT subtitles →](subtitles.md)
+
+If you have Spanish and English versions of the same episode, you do not need
+to store two complete adaptive video ladders. The picture is the same, so
+BurstStream stores it once and keeps only the two audio renditions separate.
+
+This chapter shows where those audio files are generated, how HLS advertises
+them, and how the app changes language without restarting the video.
 
 ## Shared video, separate audio
 
@@ -92,9 +99,9 @@ behavior, then honors the user's in-app choice.
 
 ```text
 Scripts/prepare-bilingual-hls.sh
-BurstStream/AudioTrackOption.swift
-BurstStream/PlayerViewModel.swift
-BurstStream/ContentView.swift
+BurstStream/Playback/MediaSelection/AudioTrackOption.swift
+BurstStream/Playback/Core/PlayerViewModel.swift
+BurstStream/App/ContentView.swift
 ```
 
 [← Network and ABR](network-and-abr.md) · [Next: WebVTT subtitles →](subtitles.md)

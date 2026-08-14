@@ -38,12 +38,16 @@ alternate audio, and subtitles.
    timestamp mapping, and legible media selection.
 10. [AirPlay](airplay.md) — system route selection, external playback state,
     and LAN delivery to Apple TV.
-11. [Professional readiness roadmap](professional-roadmap.md) — prioritized
+11. [Picture in Picture](picture-in-picture.md) — floating playback, automatic
+    background entry, and custom-player integration.
+12. [Interruptions and playback lifecycle](interruptions-and-lifecycle.md) —
+    calls, Siri, route changes, media-service recovery, and scene policy.
+13. [Professional readiness roadmap](professional-roadmap.md) — prioritized
     client-side work for lifecycle handling, persistence, recovery, QoE,
     testing, accessibility, PiP, and offline playback.
-12. [Experiments](experiments.md) — reproducible exercises for studying player
+14. [Experiments](experiments.md) — reproducible exercises for studying player
     behavior.
-13. [Glossary](glossary.md) — concise definitions of the key terms.
+15. [Glossary](glossary.md) — concise definitions of the key terms.
 
 ## Current feature coverage
 
@@ -61,7 +65,8 @@ alternate audio, and subtitles.
 | Spanish and English alternate audio | Yes |
 | Spanish and English WebVTT subtitles | Yes |
 | AirPlay route selection and external playback state | Yes — validated on iPhone and Apple TV |
-| Picture in Picture | Planned |
+| Picture in Picture | Yes — physical-device validation pending |
+| Interruptions, route changes, and media-service recovery | Yes — physical-device validation pending |
 | Offline downloads | Planned |
 
 ## How to use these documents

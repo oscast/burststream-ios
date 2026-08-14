@@ -1,12 +1,12 @@
 //
-//  LocalNetworkProfile.swift
+//  NetworkProfile.swift
 //  BurstStream
 //
 
 import Foundation
 
 /// Development-only network conditions exposed by the local HLS server.
-enum LocalNetworkProfile: String, CaseIterable, Identifiable {
+enum NetworkProfile: String, CaseIterable, Identifiable {
     case fast
     case fiveMbps = "5mbps"
     case twoMbps = "2mbps"

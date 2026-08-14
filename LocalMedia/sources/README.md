@@ -5,7 +5,15 @@ installed FFmpeg build, but MP4, MKV, and MOV are common choices.
 
 Actual media files are ignored by Git.
 
+Do not worry if your video is stored somewhere else or is too large to copy.
+Every packaging script also accepts an absolute path such as
+`/Users/your-name/Movies/my-video.mkv`.
+
 ## Local AI subtitle transcription
+
+If your video has no subtitles, the transcription script can create a local
+first draft from its spoken audio. Run it once for each dubbed language and
+review the generated text before using it in HLS.
 
 After installing FFmpeg, whisper.cpp, and a multilingual GGML model as
 described in the project README, transcribe each spoken language separately:

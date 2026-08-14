@@ -7,6 +7,13 @@ title: Playback and Buffering
 
 [← Architecture](architecture.md) · [Documentation home](index.md) · [Next: Reliability and diagnostics →](reliability-and-diagnostics.md)
 
+A play button is easy to draw. Keeping that button, the timeline, and the real
+player synchronized is the interesting part. This chapter explains the state
+and timing decisions behind controls that feel predictable.
+
+Do not worry if `CMTime` or asynchronous seeking is new to you. We will connect
+each concept to something visible in the app.
+
 ## Playback state is a combination of signals
 
 AVFoundation does not provide one property that explains the complete player
@@ -83,10 +90,10 @@ number of seconds downloaded anywhere in the episode.
 ## Related files
 
 ```text
-BurstStream/PlayerViewModel.swift
-BurstStream/PlaybackState.swift
-BurstStream/PlaybackBufferRange.swift
-BurstStream/ContentView.swift
+BurstStream/Playback/Core/PlayerViewModel.swift
+BurstStream/Playback/Core/PlaybackState.swift
+BurstStream/Playback/Core/PlaybackBufferRange.swift
+BurstStream/App/ContentView.swift
 ```
 
 [← Architecture](architecture.md) · [Next: Reliability and diagnostics →](reliability-and-diagnostics.md)

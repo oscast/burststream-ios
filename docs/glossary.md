@@ -7,6 +7,10 @@ title: Glossary
 
 [← Experiments](experiments.md) · [Documentation home](index.md)
 
+Streaming terminology can feel like a second language. Use this page as a quick
+reference whenever a chapter introduces an unfamiliar word; you are not
+expected to memorize the table.
+
 | Term | Meaning |
 |---|---|
 | HLS | HTTP-based streaming protocol built around playlists and media segments |
@@ -42,6 +46,8 @@ title: Glossary
 | AirPlay | Apple's system for routing media playback to a compatible receiver |
 | Playback route | The local or external destination that presents the player's media |
 | External playback | AVPlayer presentation performed by a route such as Apple TV |
+| Picture in Picture (PiP) | System-managed floating video window that continues outside the app's main interface |
+| Background mode | Declared capability that permits specific work, such as media playback, while an app is not foregrounded |
 | LAN | Local area network shared by nearby devices, usually through the same router |
 
 [← Experiments](experiments.md) · [Documentation home](index.md)

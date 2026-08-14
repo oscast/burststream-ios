@@ -5,10 +5,26 @@ title: Experiments
 
 # Reproducible Experiments
 
-[← AirPlay](airplay.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
+[← Picture in Picture](picture-in-picture.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
 
-Use these exercises to connect visible player behavior with AVFoundation state
-and server requests.
+Reading the concepts is useful, but changing one condition and watching the
+player respond is where they become memorable. These exercises are safe local
+experiments you can repeat as often as you like.
+
+Try one section at a time. There is no need to complete the whole page in one
+session. Use the diagnostics panel and server output to connect visible player
+behavior with AVFoundation state and network requests.
+
+## Picture in Picture
+
+1. Start local playback on a physical device.
+2. Tap the PiP button and confirm that the floating window appears.
+3. Stop PiP and verify that inline playback returns at the same position.
+4. While the video is playing, swipe to the Home Screen.
+5. Confirm that PiP starts automatically without restarting the stream.
+6. Pause and resume from the PiP controls.
+7. Return to BurstStream and confirm audio, subtitle, and quality selections.
+8. Repeat after an AirPlay session has been disconnected.
 
 ## AirPlay
 
@@ -104,4 +120,4 @@ Do not force a manual quality during this experiment: the purpose is to watch
 - Why can presentation size differ from the currently requested resource?
 - Which actions discard the buffer, and which preserve it?
 
-[← AirPlay](airplay.md) · [Next: Glossary →](glossary.md)
+[← Picture in Picture](picture-in-picture.md) · [Next: Glossary →](glossary.md)

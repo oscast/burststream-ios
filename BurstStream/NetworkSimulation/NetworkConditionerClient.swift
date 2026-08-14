@@ -1,5 +1,5 @@
 //
-//  LocalNetworkConditioner.swift
+//  NetworkConditionerClient.swift
 //  BurstStream
 //
 
@@ -9,8 +9,8 @@ import Combine
 /// Controls the development-only endpoint exposed by throttled_hls_server.py.
 /// Remote production streams never show these controls.
 @MainActor
-final class LocalNetworkConditioner: ObservableObject {
-    @Published private(set) var selectedProfile: LocalNetworkProfile?
+final class NetworkConditionerClient: ObservableObject {
+    @Published private(set) var selectedProfile: NetworkProfile?
     @Published private(set) var isUpdating = false
     @Published private(set) var errorMessage: String?
 
@@ -44,7 +44,7 @@ final class LocalNetworkConditioner: ObservableObject {
     }
 
     /// Changes the server profile without restarting playback or the server.
-    func select(_ profile: LocalNetworkProfile) {
+    func select(_ profile: NetworkProfile) {
         guard let endpointURL, profile != selectedProfile else { return }
 
         var request = URLRequest(url: endpointURL)
@@ -73,7 +73,7 @@ final class LocalNetworkConditioner: ObservableObject {
 
             let serverResponse = try JSONDecoder().decode(ProfileResponse.self, from: data)
 
-            guard let profile = LocalNetworkProfile(rawValue: serverResponse.profile) else {
+            guard let profile = NetworkProfile(rawValue: serverResponse.profile) else {
                 throw NetworkConditionerError.unknownProfile
             }
 

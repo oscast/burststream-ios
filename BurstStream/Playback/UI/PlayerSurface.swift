@@ -14,17 +14,20 @@ import UIKit
 /// builds its controls separately.
 struct PlayerSurface: UIViewRepresentable {
     let player: AVPlayer
+    let pictureInPicture: PictureInPictureController
 
     /// SwiftUI calls this method once to create the UIKit view.
     func makeUIView(context: Context) -> PlayerLayerView {
         let view = PlayerLayerView()
         view.player = player
+        pictureInPicture.attach(to: view.pictureInPictureSourceLayer)
         return view
     }
 
     /// SwiftUI calls this method when a view input changes.
     func updateUIView(_ uiView: PlayerLayerView, context: Context) {
         uiView.player = player
+        pictureInPicture.attach(to: uiView.pictureInPictureSourceLayer)
     }
 }
 
@@ -40,6 +43,11 @@ final class PlayerLayerView: UIView {
     var player: AVPlayer? {
         get { playerLayer.player }
         set { playerLayer.player = newValue }
+    }
+
+    /// PiP needs the same layer that presents inline playback as its source.
+    var pictureInPictureSourceLayer: AVPlayerLayer {
+        playerLayer
     }
 
     private var playerLayer: AVPlayerLayer {

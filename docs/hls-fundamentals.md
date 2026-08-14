@@ -7,7 +7,17 @@ title: HLS Fundamentals
 
 [← Getting started](getting-started.md) · [Documentation home](index.md) · [Next: Architecture →](architecture.md)
 
+HLS can sound complicated because it introduces several new words at once:
+codec, container, playlist, segment, rendition, and keyframe. You do not need
+to memorize them immediately. This chapter builds a simple mental model and
+shows how the pieces connect.
+
+The most important idea is this: instead of treating a movie as one large
+download, HLS describes it with text playlists and delivers it in small pieces.
+
 ## Container and codec are different concepts
+
+Let us start with a common source of confusion.
 
 An MKV or MP4 file is a **container**. It can hold video, one or more audio
 tracks, subtitles, and metadata. A **codec** describes how an individual video

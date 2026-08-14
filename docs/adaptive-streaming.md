@@ -7,6 +7,14 @@ title: Adaptive Streaming
 
 [← Reliability and diagnostics](reliability-and-diagnostics.md) · [Documentation home](index.md) · [Next: Network and ABR →](network-and-abr.md)
 
+Have you noticed a streaming video become blurry on a slow connection and
+sharper again when the network improves? That is adaptive bitrate streaming,
+usually shortened to ABR.
+
+Instead of trusting one large video quality to work everywhere, BurstStream
+offers several versions of the same timeline and lets `AVPlayer` choose the
+safest one for the current conditions.
+
 ## The quality ladder
 
 BurstStream packages the same 4:3 content at four levels:
@@ -75,9 +83,9 @@ video retains its detected aspect ratio instead of being stretched to fill a
 
 ```text
 Scripts/prepare-adaptive-hls.sh
-BurstStream/PlaybackQualityLimit.swift
-BurstStream/PlayerViewModel.swift
-BurstStream/ContentView.swift
+BurstStream/Playback/Core/PlaybackQualityLimit.swift
+BurstStream/Playback/Core/PlayerViewModel.swift
+BurstStream/App/ContentView.swift
 ```
 
 [← Reliability and diagnostics](reliability-and-diagnostics.md) · [Next: Network and ABR →](network-and-abr.md)

@@ -33,7 +33,7 @@ final class ABRHistoryRecorder: ObservableObject {
         metrics: PlaybackMetrics,
         playbackTime: TimeInterval,
         bufferAhead: TimeInterval,
-        networkProfile: LocalNetworkProfile?,
+        networkProfile: NetworkProfile?,
         playbackState: PlaybackState,
         forceTransition: Bool = false
     ) {

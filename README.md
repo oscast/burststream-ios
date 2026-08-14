@@ -3,6 +3,10 @@
 BurstStream is a hands-on **iOS HLS streaming learning lab and portfolio
 project** built with SwiftUI, AVFoundation, and `AVPlayer`.
 
+If video streaming is new to you, that is exactly what this repository is for.
+You can begin with one video on your Mac and follow the guide step by step; you
+do not need a cloud account or an existing media platform.
+
 It is designed to study how a real streaming client loads HLS playlists,
 buffers media, seeks, recovers from failures, switches adaptive bitrate (ABR)
 variants, and selects alternate audio renditions. It also includes local tools
@@ -50,6 +54,22 @@ conditions.
 - External playback state observed from the existing `AVPlayer`
 - LAN-aware guidance when `localhost` cannot be reached by Apple TV
 - End-to-end validation with a physical iPhone, Apple TV, and Mac-hosted HLS
+
+### Picture in Picture
+
+- PiP built around the existing custom `AVPlayerLayer`
+- System-standard manual start and stop control
+- Automatic floating playback when the playing app moves to the background
+- Published availability, active state, and failure information
+- Audio, AirPlay, and Picture in Picture background playback capability
+
+### Interruptions and lifecycle
+
+- Safe pause and conditional resume for calls, Siri, alarms, and other audio interruptions
+- Automatic pause when headphones, Bluetooth, AirPlay, or another external route disconnects
+- Foreground and background policy that preserves valid PiP and AirPlay playback
+- Media-services reset recovery with position, quality, audio, and subtitle restoration
+- A visible system-lifecycle panel for physical-device experiments
 
 ### Local streaming tools
 
@@ -185,9 +205,14 @@ files appear under `LocalMedia/hls/`.
 
 #### Optional: Generate subtitles with local AI
 
-If your video does not include subtitle tracks, BurstStream can transcribe its
-audio locally with whisper.cpp. The command below generates WebVTT for HLS, SRT
-for convenient editing, and detailed JSON for later review:
+If your video does not include subtitles, do not worry. BurstStream can create
+a local first draft from the spoken audio with
+`Scripts/transcribe-subtitles.sh`. The script prepares mono 16 kHz audio for
+whisper.cpp and generates WebVTT for HLS, SRT for convenient editing, and JSON
+for detailed review.
+
+Run the script once for each dubbed-language video. For example, start with the
+Spanish version:
 
 ```bash
 BURSTSTREAM_WHISPER_PROMPT="Teddy Ruxpin, Grundo, Rarilonia" \
@@ -216,6 +241,11 @@ LocalMedia/subtitles/my-video-bilingual/
 AI transcription is a starting point, not a finished publication. Review
 names, fictional vocabulary, songs, overlapping dialogue, and punctuation
 against the original audio. The prompt helps Whisper recognize uncommon names.
+
+Why does the HLS workflow use WebVTT? It is readable text, `AVPlayer` supports
+it as a selectable HLS subtitle rendition, and it can follow the same segmented
+timeline as the video. The SRT copy is included because it is convenient in
+many subtitle editors.
 
 Pass the reviewed WebVTT files to the bilingual packager to expose them as HLS
 subtitle renditions:
@@ -321,13 +351,13 @@ published as a GitHub Pages site:
 
 [BurstStream documentation](docs/index.md)
 
-After GitHub Pages is enabled, the published site is available at:
+The published guide is available at:
 
 [https://oscast.github.io/burststream-ios/](https://oscast.github.io/burststream-ios/)
 
 It covers HLS fundamentals, architecture, playback and buffering, reliability,
-ABR, network experiments, diagnostics, bilingual audio, subtitles, AirPlay, and
-reproducible study exercises.
+ABR, network experiments, diagnostics, bilingual audio, subtitles, AirPlay,
+Picture in Picture, interruptions, and reproducible study exercises.
 
 ## Media and repository policy
 
@@ -345,7 +375,8 @@ Derived build products
 
 ## Roadmap
 
-- Picture in Picture
+- Physical-device Picture in Picture validation
+- Physical-device interruption and route-change validation
 - Resume-progress persistence
 - Offline HLS downloads
 - Live-stream behavior

@@ -5,7 +5,14 @@ title: AirPlay
 
 # AirPlay
 
-[← WebVTT subtitles](subtitles.md) · [Documentation home](index.md) · [Next: Experiments →](experiments.md)
+[← WebVTT subtitles](subtitles.md) · [Documentation home](index.md) · [Next: Picture in Picture →](picture-in-picture.md)
+
+Would you like to watch the local HLS stream on a television? AirPlay lets the
+iPhone or iPad remain the controller while Apple TV presents the video.
+
+The setup has one easy-to-miss detail: Apple TV must be able to reach the HLS
+URL itself. This chapter explains the handoff and why a Mac LAN address works
+while `localhost` does not.
 
 ## Implementation status
 
@@ -116,7 +123,7 @@ AirPlay test environment. For end-to-end testing:
 
 BurstStream also includes a development-only **Play Teddy Ruxpin over LAN /
 AirPlay** shortcut for the validated local address. Because that address is
-assigned by the router, update `LocalStreams.teddyRuxpinBilingualLAN` if the
+assigned by the router, update `SampleStreams.teddyRuxpinBilingualLAN` if the
 Mac's LAN IP changes.
 
 If the Apple TV cannot load the video, first open the same LAN URL on another
@@ -126,11 +133,11 @@ open.
 ## Related files
 
 ```text
-BurstStream/AirPlayRoutePicker.swift
-BurstStream/PlaybackAudioSession.swift
-BurstStream/PlayerViewModel.swift
-BurstStream/ContentView.swift
+BurstStream/Playback/SystemFeatures/AirPlayRoutePicker.swift
+BurstStream/Playback/SystemFeatures/PlaybackAudioSession.swift
+BurstStream/Playback/Core/PlayerViewModel.swift
+BurstStream/App/ContentView.swift
 Scripts/serve-local-hls.sh
 ```
 
-[← WebVTT subtitles](subtitles.md) · [Next: Experiments →](experiments.md)
+[← WebVTT subtitles](subtitles.md) · [Next: Picture in Picture →](picture-in-picture.md)
