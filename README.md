@@ -138,7 +138,10 @@ start.
 #### Option A: Single-quality HLS
 
 This creates one video quality. It is the simplest option for learning what an
-HLS playlist and its media segments look like.
+HLS playlist and its media segments look like. FFmpeg encodes one H.264/AAC
+rendition, divides it into approximately six-second MPEG-TS segments, and
+writes a complete VOD playlist. It does not create resolutions for automatic
+quality switching.
 
 ```bash
 Scripts/prepare-local-hls.sh LocalMedia/sources/my-video.mp4 my-video

@@ -44,9 +44,50 @@ pass an absolute path to a file stored elsewhere.
 
 ### Single-quality HLS
 
+This is the simplest packaging option. It converts one source video into one
+streaming quality instead of creating several resolutions for adaptive
+switching.
+
 ```bash
 Scripts/prepare-local-hls.sh LocalMedia/sources/my-video.mp4 my-video
 ```
+
+The command has two inputs:
+
+```text
+LocalMedia/sources/my-video.mp4   Source video to convert
+my-video                         Name of the generated stream folder
+```
+
+The script uses FFmpeg to:
+
+1. read the MP4, MKV, MOV, or other FFmpeg-compatible source;
+2. encode its video as H.264 without intentionally changing its dimensions;
+3. encode its audio as 128 Kbps stereo AAC;
+4. place keyframes every two seconds for seeking and segment boundaries;
+5. divide the encoded presentation into MPEG-TS files of approximately six
+   seconds each;
+6. create a complete VOD playlist listing those segments; and
+7. replace the previous output only after the entire conversion succeeds.
+
+For example, the command above produces:
+
+```text
+LocalMedia/hls/my-video/
+├── master.m3u8
+├── segment_000.ts
+├── segment_001.ts
+└── ...
+```
+
+Despite its filename, this single-quality `master.m3u8` directly lists media
+segments, so it is technically a **media playlist**. The project keeps the
+filename consistent with its other stream URLs.
+
+When `AVPlayer` opens this playlist, it can request and buffer the segments as
+needed, but it cannot change between 360p, 720p, and 1080p because only one
+rendition exists. Use this option to study basic HLS packaging and requests;
+use adaptive HLS to study automatic quality switching.
 
 ### Adaptive HLS
 

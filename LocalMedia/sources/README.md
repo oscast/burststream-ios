@@ -28,11 +28,29 @@ text against the original audio before publishing it.
 
 ## Single-quality HLS
 
+Use this option when you want to learn the basic HLS structure before adding
+adaptive bitrate switching. It re-encodes the source as one H.264/AAC quality,
+creates approximately six-second MPEG-TS segments, and writes one VOD playlist.
+It does not create alternate resolutions.
+
 ```bash
 Scripts/prepare-local-hls.sh \
   LocalMedia/sources/my-video.mp4 \
   my-video
 ```
+
+Output:
+
+```text
+LocalMedia/hls/my-video/
+├── master.m3u8       Playlist containing the ordered segment list
+├── segment_000.ts    First approximately six-second media segment
+├── segment_001.ts    Next media segment
+└── ...
+```
+
+The source file remains unchanged. The script generates into a temporary
+directory and replaces an older `my-video` package only after FFmpeg succeeds.
 
 ## Four-quality adaptive HLS
 
