@@ -5,7 +5,7 @@ title: Interruptions and Playback Lifecycle
 
 # Interruptions and Playback Lifecycle
 
-[← Picture in Picture](picture-in-picture.md) · [Documentation home](index.md) · [Next: Professional roadmap →](professional-roadmap.md)
+[← Picture in Picture](picture-in-picture.md) · [Documentation home](index.md) · [Next: Continue Watching →](continue-watching.md)
 
 Your stream can be healthy and fully buffered, but playback still shares the
 device with phone calls, Siri, alarms, headphones, Bluetooth, and other apps.
@@ -319,4 +319,4 @@ BurstStream/Playback/UI/PlaybackLifecycleView.swift
 BurstStream/Playback/UI/StreamPlayerView.swift
 ```
 
-[← Picture in Picture](picture-in-picture.md) · [Next: Professional roadmap →](professional-roadmap.md)
+[← Picture in Picture](picture-in-picture.md) · [Next: Continue Watching →](continue-watching.md)

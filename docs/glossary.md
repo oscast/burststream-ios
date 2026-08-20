@@ -49,5 +49,7 @@ expected to memorize the table.
 | Picture in Picture (PiP) | System-managed floating video window that continues outside the app's main interface |
 | Background mode | Declared capability that permits specific work, such as media playback, while an app is not foregrounded |
 | LAN | Local area network shared by nearby devices, usually through the same router |
+| Stable content ID | Identifier that continues to represent the same media across app launches and URL changes |
+| Continue Watching | Persisted bookmark used to offer unfinished media at its previous position and preferences |
 
 [← Experiments](experiments.md) · [Documentation home](index.md)

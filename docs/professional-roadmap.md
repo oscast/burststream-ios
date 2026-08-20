@@ -62,14 +62,14 @@ every call, route disconnection, or media-server reset.
 
 ## Priority 2: Continue Watching persistence
 
-- [ ] Create a stable identifier for each playable item.
-- [ ] Persist the current position and duration periodically and when leaving
+- [x] Create a stable identifier for each playable item.
+- [x] Persist the current position and duration periodically and when leaving
       playback.
-- [ ] Persist the preferred audio language, subtitle choice, and quality limit.
-- [ ] Offer to resume an unfinished item from its saved position.
-- [ ] Treat nearly completed items as finished instead of resuming at the end.
+- [x] Persist the preferred audio language, subtitle choice, and quality limit.
+- [x] Offer to resume an unfinished item from its saved position.
+- [x] Treat nearly completed items as finished instead of resuming at the end.
 - [ ] Remove stale progress when media is deleted or replaced.
-- [ ] Unit-test resume thresholds and persistence mapping.
+- [x] Unit-test resume thresholds and persistence mapping.
 
 ### Completion criteria
 
@@ -136,7 +136,7 @@ exported.
 - [ ] Error classification.
 - [ ] Buffer-range conversion.
 - [ ] QoE calculations.
-- [ ] Continue Watching thresholds.
+- [x] Continue Watching thresholds.
 - [ ] Audio and subtitle preference restoration.
 
 ### Integration tests
@@ -178,8 +178,8 @@ exported.
 
 ## Priority 7: Picture in Picture
 
-AirPlay is complete, and the first Picture in Picture implementation is now
-ready for physical-device validation.
+AirPlay and the first Picture in Picture implementation have both been
+validated on physical hardware.
 
 - [x] Add `AVPictureInPictureController` around the existing player layer.
 - [x] Observe PiP availability and active state.
@@ -215,6 +215,51 @@ ready for physical-device validation.
 - [ ] Keep the README, documentation feature table, and screenshots current.
 - [ ] Record a short portfolio demo covering normal playback, ABR adaptation,
       recovery, alternate tracks, subtitles, and AirPlay.
+
+## Future product layer: Series catalog and remote media host
+
+The current form-based launcher is intentionally useful for studying one HLS
+URL at a time. Once more episodes are available, the home screen can become a
+catalog similar to a simplified streaming service:
+
+- [ ] Model a **Series** with title, artwork, description, and seasons.
+- [ ] Model an **Episode** with a stable content ID, episode number, title,
+      synopsis, duration, artwork, and relative HLS path.
+- [ ] Present horizontal series shelves and an episode list instead of one
+      large group of development buttons.
+- [ ] Keep the public sample stream as a catalog item, not a special playback
+      path.
+- [ ] Load the user's own series from the same catalog interface.
+- [ ] Connect Continue Watching records to episode cards through stable IDs.
+- [ ] Keep a small developer screen for entering or changing the server URL.
+- [ ] Load catalog metadata from local JSON first; consider a server-provided
+      JSON catalog only when the local format is understood.
+
+The catalog and the media host should remain separate. The iOS app needs only
+metadata and reachable HLS URLs; it does not need to know whether the segments
+live on this Mac, an external SSD, another laptop, or a future remote server.
+
+A practical later setup could be:
+
+```text
+External SSD
+└── BurstStreamMedia/
+    ├── catalog.json
+    ├── artwork/
+    └── hls/
+        └── series-id/season-01/episode-01/master.m3u8
+
+Media laptop
+└── serves BurstStreamMedia over HTTP on the LAN
+
+iOS app
+└── stores one configurable server base URL
+```
+
+This avoids filling the development Mac with generated renditions and prevents
+the app from hardcoding `localhost`, one laptop's IP address, or absolute disk
+paths. Moving the server should require changing configuration, not rebuilding
+the app.
 
 ## Optional specialization tracks
 
@@ -258,7 +303,8 @@ BurstStream can be presented as a professional iOS streaming portfolio project.
 7. Picture in Picture.
 8. Offline HLS.
 9. Configuration, CI, and performance validation.
-10. Choose one optional specialization track.
+10. Series catalog and remote media-host configuration.
+11. Choose one optional specialization track.
 
 Completing priorities 1 through 5 would make BurstStream a strong and credible
 portfolio project. Priorities 6 through 9 would make it feel like a polished

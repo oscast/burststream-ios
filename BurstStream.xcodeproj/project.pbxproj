@@ -6,7 +6,29 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3E356F96E25B52796D472923 /* PlaybackProgressStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C6CE29896E6117050D08FA /* PlaybackProgressStoreTests.swift */; };
+		45D56FDB0B6AEC6EA0608F6E /* PlaybackProgressControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638590CEF1FF44669DC45B4D /* PlaybackProgressControllerTests.swift */; };
+		5D5E1C74F44DB58EEC24B2DE /* PlaybackProgressPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBED8E7104A6D8D1A1394F51 /* PlaybackProgressPolicyTests.swift */; };
+		E0F552CE46466777423406A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A40A4D268BAC31D28D21BE5C /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B4E99F8865C26662D9F86035 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F20F80B7302A9C2700DA7575 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F20F80BE302A9C2700DA7575;
+			remoteInfo = BurstStream;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		24C6CE29896E6117050D08FA /* PlaybackProgressStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackProgressStoreTests.swift; sourceTree = "<group>"; };
+		638590CEF1FF44669DC45B4D /* PlaybackProgressControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackProgressControllerTests.swift; sourceTree = "<group>"; };
+		A40A4D268BAC31D28D21BE5C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		BF8DCF0D280DA7D0720D9159 /* BurstStreamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BurstStreamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CBED8E7104A6D8D1A1394F51 /* PlaybackProgressPolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackProgressPolicyTests.swift; sourceTree = "<group>"; };
 		F20F80BF302A9C2700DA7575 /* BurstStream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BurstStream.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -19,6 +41,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		CA1F037FB07A468F4286AF4B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E0F552CE46466777423406A5 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F20F80BC302A9C2700DA7575 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -29,11 +59,39 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0B9A9AA903316E91CB260594 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				A40A4D268BAC31D28D21BE5C /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		28DB0DD583898102EDB3196C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0B9A9AA903316E91CB260594 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		377278FD05267551C1E6A785 /* BurstStreamTests */ = {
+			isa = PBXGroup;
+			children = (
+				638590CEF1FF44669DC45B4D /* PlaybackProgressControllerTests.swift */,
+				CBED8E7104A6D8D1A1394F51 /* PlaybackProgressPolicyTests.swift */,
+				24C6CE29896E6117050D08FA /* PlaybackProgressStoreTests.swift */,
+			);
+			path = BurstStreamTests;
+			sourceTree = "<group>";
+		};
 		F20F80B6302A9C2700DA7575 = {
 			isa = PBXGroup;
 			children = (
 				F20F80C1302A9C2700DA7575 /* BurstStream */,
 				F20F80C0302A9C2700DA7575 /* Products */,
+				28DB0DD583898102EDB3196C /* Frameworks */,
+				377278FD05267551C1E6A785 /* BurstStreamTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -41,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				F20F80BF302A9C2700DA7575 /* BurstStream.app */,
+				BF8DCF0D280DA7D0720D9159 /* BurstStreamTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +107,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E3EC362242EA266FFAEF78CB /* BurstStreamTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E4AB8FFC027A23F4E596DA74 /* Build configuration list for PBXNativeTarget "BurstStreamTests" */;
+			buildPhases = (
+				637DFF9464D0D82AA52D4E3B /* Sources */,
+				CA1F037FB07A468F4286AF4B /* Frameworks */,
+				143C6176DFDD59621F4376EC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D599330CEEB074E2CCB7908F /* PBXTargetDependency */,
+			);
+			name = BurstStreamTests;
+			productName = BurstStreamTests;
+			productReference = BF8DCF0D280DA7D0720D9159 /* BurstStreamTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		F20F80BE302A9C2700DA7575 /* BurstStream */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F20F80CA302A9C2B00DA7575 /* Build configuration list for PBXNativeTarget "BurstStream" */;
@@ -64,8 +141,6 @@
 				F20F80C1302A9C2700DA7575 /* BurstStream */,
 			);
 			name = BurstStream;
-			packageProductDependencies = (
-			);
 			productName = BurstStream;
 			productReference = F20F80BF302A9C2700DA7575 /* BurstStream.app */;
 			productType = "com.apple.product-type.application";
@@ -100,11 +175,19 @@
 			projectRoot = "";
 			targets = (
 				F20F80BE302A9C2700DA7575 /* BurstStream */,
+				E3EC362242EA266FFAEF78CB /* BurstStreamTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		143C6176DFDD59621F4376EC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F20F80BD302A9C2700DA7575 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +198,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		637DFF9464D0D82AA52D4E3B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				45D56FDB0B6AEC6EA0608F6E /* PlaybackProgressControllerTests.swift in Sources */,
+				5D5E1C74F44DB58EEC24B2DE /* PlaybackProgressPolicyTests.swift in Sources */,
+				3E356F96E25B52796D472923 /* PlaybackProgressStoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F20F80BB302A9C2700DA7575 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +217,51 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		D599330CEEB074E2CCB7908F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BurstStream;
+			target = F20F80BE302A9C2700DA7575 /* BurstStream */;
+			targetProxy = B4E99F8865C26662D9F86035 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		7B8DC3639810EC92EE1A9E21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oscast.BurstStreamTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BurstStream.app/BurstStream";
+			};
+			name = Debug;
+		};
+		8EC92C62CD5B357BC27942A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oscast.BurstStreamTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BurstStream.app/BurstStream";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		F20F80C8302A9C2B00DA7575 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -301,6 +438,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E4AB8FFC027A23F4E596DA74 /* Build configuration list for PBXNativeTarget "BurstStreamTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8EC92C62CD5B357BC27942A4 /* Release */,
+				7B8DC3639810EC92EE1A9E21 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F20F80BA302A9C2700DA7575 /* Build configuration list for PBXProject "BurstStream" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

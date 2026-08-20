@@ -114,9 +114,36 @@ final class PlayerViewModel: ObservableObject {
         return max(currentRange.end - currentTime, 0)
     }
 
-    convenience init(streamURL: URL) {
+    /// Persistence reads language identifiers rather than AVFoundation media
+    /// options so saved records remain independent of AVPlayerItem.
+    var selectedAudioLanguageCode: String? {
+        audioTracks.first(where: { $0.id == selectedAudioTrackID })?.languageCode
+    }
+
+    var selectedSubtitleLanguageCode: String? {
+        subtitleTracks.first(where: { $0.id == selectedSubtitleTrackID })?.languageCode
+    }
+
+    /// Nil means subtitle discovery has not completed. Persistence can then
+    /// preserve its previous value instead of incorrectly saving Off.
+    var areSubtitlesEnabledForPersistence: Bool? {
+        guard !subtitleTracks.isEmpty, let selectedSubtitleTrackID else { return nil }
+        return selectedSubtitleTrackID != SubtitleTrackOption.off.id
+    }
+
+    /// True while a rebuilt HLS item is waiting for a usable duration before
+    /// returning to its previous position.
+    var isPositionRestorationPending: Bool {
+        pendingResumeTime != nil
+    }
+
+    convenience init(
+        streamURL: URL,
+        restoration: PlaybackRestorationState? = nil
+    ) {
         self.init(
             streamURL: streamURL,
+            restoration: restoration,
             retryPolicy: .playbackDefault,
             retryScheduler: TaskRetryScheduler()
         )
@@ -125,16 +152,32 @@ final class PlayerViewModel: ObservableObject {
     /// Explicit initializer for injecting retry policy and scheduler in tests.
     init(
         streamURL: URL,
+        restoration: PlaybackRestorationState? = nil,
         retryPolicy: RetryPolicy,
         retryScheduler: any RetryScheduling
     ) {
         self.streamURL = streamURL
         self.retryPolicy = retryPolicy
         self.retryScheduler = retryScheduler
+        let initialQualityLimit = restoration?.qualityLimit ?? .automatic
+
+        // Apply durable preferences before constructing the first item so its
+        // initial HLS requests already respect the saved quality ceiling.
+        qualityLimit = initialQualityLimit
+        if let restoration {
+            preferredAudioLanguageCode = restoration.audioLanguageCode
+            preferredSubtitleLanguageCode = restoration.subtitlesEnabled
+                ? restoration.subtitleLanguageCode
+                : nil
+            hasPreferredSubtitleSelection = true
+            pendingResumeTime = restoration.position > 0
+                ? restoration.position
+                : nil
+        }
 
         // AVPlayerItem represents content; AVPlayer represents the playback engine.
         let item = AVPlayerItem(url: streamURL)
-        Self.apply(.automatic, to: item)
+        Self.apply(initialQualityLimit, to: item)
         player = AVPlayer(playerItem: item)
 
         // AVPlayer already knows how to hand an HLS URL and playback state to an

@@ -35,6 +35,10 @@ System notifications / scenePhase
 PlaybackLifecycleController
     ↓ sends safe play, pause, and recovery actions to
 PlayerViewModel
+
+PlaybackProgressController
+    ↓ stores lightweight bookmarks through
+PlaybackProgressStoring
 ```
 
 ## AVPlayerItem
@@ -128,14 +132,17 @@ BurstStream/
 │   ├── UI/
 │   ├── MediaSelection/
 │   └── SystemFeatures/
+├── Persistence/
 ├── NetworkSimulation/
 ├── Diagnostics/
 └── Resources/
 ```
 
 `Streaming` describes selectable HLS sources. `Playback` owns AVPlayer behavior
-and its interface. `NetworkSimulation` talks only to the development throttling
-server. `Diagnostics` records and presents what happened during playback.
+and its interface. `Persistence` owns Continue Watching records and policy;
+it receives lightweight snapshots rather than owning AVPlayer.
+`NetworkSimulation` talks only to the development throttling server.
+`Diagnostics` records and presents what happened during playback.
 
 ## Related files
 
@@ -151,6 +158,8 @@ BurstStream/Playback/SystemFeatures/PlaybackLifecycleController.swift
 BurstStream/Playback/SystemFeatures/PlaybackAudioSession.swift
 BurstStream/Playback/Core/RetryPolicy.swift
 BurstStream/Playback/Core/PlaybackState.swift
+BurstStream/Persistence/PlaybackProgressController.swift
+BurstStream/Persistence/PlaybackProgressStore.swift
 ```
 
 [← HLS fundamentals](hls-fundamentals.md) · [Next: Playback and buffering →](playback-and-buffering.md)

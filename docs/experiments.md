@@ -5,7 +5,7 @@ title: Experiments
 
 # Reproducible Experiments
 
-[← Picture in Picture](picture-in-picture.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
+[← Professional roadmap](professional-roadmap.md) · [Documentation home](index.md) · [Next: Glossary →](glossary.md)
 
 Reading the concepts is useful, but changing one condition and watching the
 player respond is where they become memorable. These exercises are safe local
@@ -14,6 +14,16 @@ experiments you can repeat as often as you like.
 Try one section at a time. There is no need to complete the whole page in one
 session. Use the diagnostics panel and server output to connect visible player
 behavior with AVFoundation state and network requests.
+
+## Continue Watching without a LAN
+
+1. Tap **Use sample HLS stream**.
+2. Play or seek beyond `00:30` and choose a quality ceiling.
+3. Return to the home screen and find the Continue Watching card.
+4. Tap **Continue** and verify position and quality restoration.
+5. Terminate and relaunch the app to prove the bookmark is durable.
+6. Tap **Start Over** and confirm that the record disappears.
+7. Seek beyond 90 percent and confirm the item is treated as complete.
 
 ## Picture in Picture
 
@@ -120,4 +130,4 @@ Do not force a manual quality during this experiment: the purpose is to watch
 - Why can presentation size differ from the currently requested resource?
 - Which actions discard the buffer, and which preserve it?
 
-[← Picture in Picture](picture-in-picture.md) · [Next: Glossary →](glossary.md)
+[← Professional roadmap](professional-roadmap.md) · [Next: Glossary →](glossary.md)

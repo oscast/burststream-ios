@@ -17,16 +17,30 @@ struct StreamPlayerView: View {
     @StateObject private var abrHistory = ABRHistoryRecorder()
     @StateObject private var pictureInPicture = PictureInPictureController()
     @StateObject private var playbackLifecycle: PlaybackLifecycleController
+    @StateObject private var progressController: PlaybackProgressController
 
-    init(video: StreamSource) {
+    init(
+        video: StreamSource,
+        restoration: PlaybackRestorationState? = nil,
+        progressStore: UserDefaultsPlaybackProgressStore
+    ) {
         self.video = video
-        let viewModel = PlayerViewModel(streamURL: video.streamURL)
+        let viewModel = PlayerViewModel(
+            streamURL: video.streamURL,
+            restoration: restoration
+        )
         _viewModel = StateObject(wrappedValue: viewModel)
         _playbackLifecycle = StateObject(
             wrappedValue: PlaybackLifecycleController(playback: viewModel)
         )
         _networkConditioner = StateObject(
             wrappedValue: NetworkConditionerClient(streamURL: video.streamURL)
+        )
+        _progressController = StateObject(
+            wrappedValue: PlaybackProgressController(
+                source: video,
+                store: progressStore
+            )
         )
     }
 
@@ -51,7 +65,11 @@ struct StreamPlayerView: View {
             playbackLifecycle.handleScenePhase(scenePhase)
         }
         .onDisappear {
+            recordProgress(force: true)
             viewModel.pause()
+        }
+        .onChange(of: viewModel.currentTime) { _, _ in
+            recordProgress()
         }
         .onChange(of: viewModel.playbackMetrics) { _, metrics in
             recordABRSample(metrics: metrics)
@@ -61,8 +79,24 @@ struct StreamPlayerView: View {
         }
         .onChange(of: viewModel.playbackState) { _, _ in
             recordABRSample(metrics: viewModel.playbackMetrics)
+
+            if viewModel.playbackState == .ended {
+                progressController.clear()
+            }
+        }
+        .onChange(of: viewModel.qualityLimit) { _, _ in
+            recordProgress(force: true)
+        }
+        .onChange(of: viewModel.selectedAudioTrackID) { _, _ in
+            recordProgress(force: true)
+        }
+        .onChange(of: viewModel.selectedSubtitleTrackID) { _, _ in
+            recordProgress(force: true)
         }
         .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                recordProgress(force: true)
+            }
             playbackLifecycle.handleScenePhase(newPhase)
         }
     }
@@ -181,6 +215,21 @@ struct StreamPlayerView: View {
             networkProfile: networkConditioner.selectedProfile,
             playbackState: viewModel.playbackState,
             forceTransition: forceTransition
+        )
+    }
+
+    private func recordProgress(force: Bool = false) {
+        progressController.record(
+            PlaybackProgressSnapshot(
+                position: viewModel.currentTime,
+                duration: viewModel.duration,
+                qualityLimit: viewModel.qualityLimit,
+                audioLanguageCode: viewModel.selectedAudioLanguageCode,
+                subtitlesEnabled: viewModel.areSubtitlesEnabledForPersistence,
+                subtitleLanguageCode: viewModel.selectedSubtitleLanguageCode,
+                isPositionRestorationPending: viewModel.isPositionRestorationPending
+            ),
+            force: force
         )
     }
 }

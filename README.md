@@ -71,6 +71,15 @@ conditions.
 - Media-services reset recovery with position, quality, audio, and subtitle restoration
 - A visible system-lifecycle panel for physical-device experiments
 
+### Continue Watching
+
+- Stable stream identity that survives app relaunches
+- Saved position, duration, quality, audio, and subtitle preferences
+- Friendly **Continue** and **Start Over** actions on the home screen
+- 30-second resume and 90-percent completion rules
+- Throttled periodic saves plus background and exit checkpoints
+- Unit tests for persistence, thresholds, throttling, and restoration races
+
 ### Local streaming tools
 
 - FFmpeg scripts for single-quality, adaptive, and bilingual HLS packaging
@@ -357,7 +366,8 @@ The published guide is available at:
 
 It covers HLS fundamentals, architecture, playback and buffering, reliability,
 ABR, network experiments, diagnostics, bilingual audio, subtitles, AirPlay,
-Picture in Picture, interruptions, and reproducible study exercises.
+Picture in Picture, interruptions, Continue Watching, and reproducible study
+exercises.
 
 ## Media and repository policy
 
@@ -375,9 +385,10 @@ Derived build products
 
 ## Roadmap
 
-- Physical-device Picture in Picture validation
 - Physical-device interruption and route-change validation
-- Resume-progress persistence
+- Stale Continue Watching cleanup for deleted or replaced catalog media
+- A series-and-episodes catalog home backed by a configurable HLS server
+- External-SSD or second-laptop media hosting without hardcoded disk paths
 - Offline HLS downloads
 - Live-stream behavior
 - Playback analytics

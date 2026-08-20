@@ -6,14 +6,25 @@
 import SwiftUI
 
 struct ContentView: View {
-    // Editable URL text and the stream selected for navigation.
+    // One store instance keeps the home card synchronized when playback saves.
+    @StateObject private var progressStore = UserDefaultsPlaybackProgressStore()
+
+    // Editable URL text and the request selected for navigation.
     @State private var draftStreamURLText = SampleStreams.teddyRuxpinBilingualHLS.absoluteString
-    @State private var selectedStream: StreamSource?
+    @State private var playbackRequest: PlaybackRequest?
     @State private var validationMessage: String?
 
     var body: some View {
         NavigationStack {
             Form {
+                if let progress = progressStore.mostRecentResumableProgress {
+                    ContinueWatchingView(
+                        progress: progress,
+                        onContinue: { continueWatching(progress) },
+                        onStartOver: { startOver(progress) }
+                    )
+                }
+
                 Section("Your HLS stream") {
                     TextField("https://example.com/video/master.m3u8", text: $draftStreamURLText, axis: .vertical)
                         .textInputAutocapitalization(.never)
@@ -28,19 +39,28 @@ struct ContentView: View {
 
                     Button("Play Teddy Ruxpin local stream") {
                         draftStreamURLText = SampleStreams.teddyRuxpinBilingualHLS.absoluteString
-                        loadStream()
+                        loadStream(
+                            title: "Teddy Ruxpin",
+                            subtitle: "Local bilingual HLS stream"
+                        )
                     }
                     .buttonStyle(.bordered)
 
                     Button("Play Teddy Ruxpin over LAN / AirPlay") {
                         draftStreamURLText = SampleStreams.teddyRuxpinBilingualLAN.absoluteString
-                        loadStream()
+                        loadStream(
+                            title: "Teddy Ruxpin",
+                            subtitle: "LAN bilingual HLS stream"
+                        )
                     }
                     .buttonStyle(.bordered)
 
                     Button("Use sample HLS stream") {
                         draftStreamURLText = SampleStreams.bigBuckBunnyHLS.absoluteString
-                        loadStream()
+                        loadStream(
+                            title: "Big Buck Bunny",
+                            subtitle: "Public adaptive HLS sample"
+                        )
                     }
                     .buttonStyle(.bordered)
 
@@ -67,13 +87,20 @@ struct ContentView: View {
             .onAppear {
                 draftStreamURLText = SampleStreams.teddyRuxpinBilingualHLS.absoluteString
             }
-            .navigationDestination(item: $selectedStream) { stream in
-                StreamPlayerView(video: stream)
+            .navigationDestination(item: $playbackRequest) { request in
+                StreamPlayerView(
+                    video: request.source,
+                    restoration: request.restoration,
+                    progressStore: progressStore
+                )
             }
         }
     }
 
-    private func loadStream() {
+    private func loadStream(
+        title: String = "My HLS Stream",
+        subtitle: String = "User-provided .m3u8 stream"
+    ) {
         // Validate the HTTP URL before creating AVPlayer.
         let trimmedURL = draftStreamURLText.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -88,10 +115,28 @@ struct ContentView: View {
         }
 
         validationMessage = nil
-        selectedStream = StreamSource(
-            title: "My HLS Stream",
-            subtitle: "User-provided .m3u8 stream",
-            streamURL: url
+        playbackRequest = PlaybackRequest(
+            source: StreamSource(
+                title: title,
+                subtitle: subtitle,
+                streamURL: url
+            ),
+            restoration: nil
+        )
+    }
+
+    private func continueWatching(_ progress: PlaybackProgress) {
+        playbackRequest = PlaybackRequest(
+            source: progress.source,
+            restoration: progress.restorationState
+        )
+    }
+
+    private func startOver(_ progress: PlaybackProgress) {
+        progressStore.removeProgress(for: progress.streamID)
+        playbackRequest = PlaybackRequest(
+            source: progress.source,
+            restoration: nil
         )
     }
 }

@@ -42,12 +42,14 @@ alternate audio, and subtitles.
     background entry, and custom-player integration.
 12. [Interruptions and playback lifecycle](interruptions-and-lifecycle.md) —
     calls, Siri, route changes, media-service recovery, and scene policy.
-13. [Professional readiness roadmap](professional-roadmap.md) — prioritized
+13. [Continue Watching](continue-watching.md) — stable content identity,
+    persistence thresholds, restoration timing, and resume behavior.
+14. [Professional readiness roadmap](professional-roadmap.md) — prioritized
     client-side work for lifecycle handling, persistence, recovery, QoE,
     testing, accessibility, PiP, and offline playback.
-14. [Experiments](experiments.md) — reproducible exercises for studying player
+15. [Experiments](experiments.md) — reproducible exercises for studying player
     behavior.
-15. [Glossary](glossary.md) — concise definitions of the key terms.
+16. [Glossary](glossary.md) — concise definitions of the key terms.
 
 ## Current feature coverage
 
@@ -65,8 +67,9 @@ alternate audio, and subtitles.
 | Spanish and English alternate audio | Yes |
 | Spanish and English WebVTT subtitles | Yes |
 | AirPlay route selection and external playback state | Yes — validated on iPhone and Apple TV |
-| Picture in Picture | Yes — physical-device validation pending |
+| Picture in Picture | Yes — validated on physical hardware |
 | Interruptions, route changes, and media-service recovery | Yes — physical-device validation pending |
+| Continue Watching persistence | Yes — public sample testing available without LAN |
 | Offline downloads | Planned |
 
 ## How to use these documents
