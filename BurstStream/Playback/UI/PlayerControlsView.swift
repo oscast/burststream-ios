@@ -10,6 +10,8 @@ struct PlayerControlsView: View {
     @ObservedObject var viewModel: PlayerViewModel
     @ObservedObject var pictureInPicture: PictureInPictureController
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     // Scrubbing needs an independent local position. Reading currentTime
     // directly would let AVPlayer move the slider underneath the finger.
     @State private var scrubberValue: TimeInterval = 0
@@ -37,59 +39,77 @@ struct PlayerControlsView: View {
                 onEditingChanged: handleScrubbing
             )
             .disabled(viewModel.duration <= 0)
+            .accessibilityLabel("Playback position")
+            .accessibilityValue(
+                "Elapsed \(formatTime(displayedTime)) of \(formatTime(viewModel.duration))"
+            )
+            .accessibilityHint("Swipe up or down to move through the video")
 
             BufferProgressView(
                 ranges: viewModel.bufferedRanges,
                 duration: viewModel.duration
             )
             .frame(height: 6)
+            .accessibilityHidden(true)
 
-            HStack {
+            timelineLayout {
                 Text(formatTime(displayedTime))
                     .monospacedDigit()
-
-                Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityHidden(true)
 
                 Label(
-                    "\(formatTime(viewModel.bufferedDurationAhead)) buffered",
+                    "Buffered \(formatTime(viewModel.bufferedDurationAhead))",
                     systemImage: "arrow.down.circle"
                 )
                 .foregroundStyle(.cyan)
-
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .center)
+                .accessibilityLabel("Buffered duration")
+                .accessibilityValue(formatTime(viewModel.bufferedDurationAhead))
 
                 Text(formatTime(viewModel.duration))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .accessibilityHidden(true)
             }
             .font(.caption)
 
-            HStack(spacing: 36) {
+            controlLayout {
                 Button {
                     viewModel.skip(by: -10)
                 } label: {
                     Image(systemName: "gobackward.10")
+                        .frame(minWidth: 44, minHeight: 44)
                 }
                 .disabled(viewModel.duration <= 0)
                 .accessibilityLabel("Go back 10 seconds")
+                .accessibilityHint("Rewinds the video")
 
                 Button {
                     viewModel.togglePlayback()
                 } label: {
                     Image(systemName: viewModel.isPlaybackActive ? "pause.fill" : "play.fill")
-                        .frame(width: 34, height: 34)
+                        .frame(minWidth: 44, minHeight: 44)
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.circle)
                 .accessibilityLabel(viewModel.isPlaybackActive ? "Pause" : "Play")
+                .accessibilityHint(
+                    viewModel.isPlaybackActive
+                        ? "Pauses the video"
+                        : "Starts the video"
+                )
 
                 Button {
                     viewModel.skip(by: 10)
                 } label: {
                     Image(systemName: "goforward.10")
+                        .frame(minWidth: 44, minHeight: 44)
                 }
                 .disabled(viewModel.duration <= 0)
                 .accessibilityLabel("Go forward 10 seconds")
+                .accessibilityHint("Advances the video")
 
                 if pictureInPicture.isSupported {
                     Button {
@@ -100,7 +120,7 @@ struct PlayerControlsView: View {
                                 ? AVPictureInPictureController.pictureInPictureButtonStopImage
                                 : AVPictureInPictureController.pictureInPictureButtonStartImage
                         )
-                        .frame(width: 28, height: 28)
+                        .frame(minWidth: 44, minHeight: 44)
                     }
                     .disabled(!pictureInPicture.isPossible && !pictureInPicture.isActive)
                     .accessibilityLabel(
@@ -120,6 +140,18 @@ struct PlayerControlsView: View {
             guard !isScrubbing else { return }
             scrubberValue = newValue
         }
+    }
+
+    private var timelineLayout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
+            : AnyLayout(HStackLayout(spacing: 8))
+    }
+
+    private var controlLayout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 12))
+            : AnyLayout(HStackLayout(spacing: 36))
     }
 
     private func handleScrubbing(_ editing: Bool) {

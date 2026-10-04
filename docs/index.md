@@ -44,12 +44,16 @@ alternate audio, and subtitles.
     calls, Siri, route changes, media-service recovery, and scene policy.
 13. [Continue Watching](continue-watching.md) — stable content identity,
     persistence thresholds, restoration timing, and resume behavior.
-14. [Professional readiness roadmap](professional-roadmap.md) — prioritized
+14. [Error classification and recovery](error-recovery.md) — useful failure
+    messages, safe automatic retries, and manual recovery.
+15. [Offline HLS](offline-hls.md) — system-managed VOD downloads, local
+    playback, and Simulator validation limits.
+16. [Professional readiness roadmap](professional-roadmap.md) — prioritized
     client-side work for lifecycle handling, persistence, recovery, QoE,
     testing, accessibility, PiP, and offline playback.
-15. [Experiments](experiments.md) — reproducible exercises for studying player
+17. [Experiments](experiments.md) — reproducible exercises for studying player
     behavior.
-16. [Glossary](glossary.md) — concise definitions of the key terms.
+18. [Glossary](glossary.md) — concise definitions of the key terms.
 
 ## Current feature coverage
 
@@ -70,7 +74,9 @@ alternate audio, and subtitles.
 | Picture in Picture | Yes — validated on physical hardware |
 | Interruptions, route changes, and media-service recovery | Yes — physical-device validation pending |
 | Continue Watching persistence | Yes — public sample testing available without LAN |
-| Offline downloads | Planned |
+| Error classification and recovery | Yes — deterministic server fixtures and Simulator tests |
+| Session QoE history and JSON export | Yes — local, privacy-limited summaries |
+| Offline downloads | Implemented for VOD; signed iPad Simulator smoke passed; physical background validation pending |
 
 ## How to use these documents
 

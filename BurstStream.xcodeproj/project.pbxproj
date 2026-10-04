@@ -7,10 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A2B3C4D5E6F708192A3B4C5 /* MediaServerSettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708192A3B4C6 /* MediaServerSettingsStoreTests.swift */; };
 		3E356F96E25B52796D472923 /* PlaybackProgressStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C6CE29896E6117050D08FA /* PlaybackProgressStoreTests.swift */; };
 		45D56FDB0B6AEC6EA0608F6E /* PlaybackProgressControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638590CEF1FF44669DC45B4D /* PlaybackProgressControllerTests.swift */; };
 		5D5E1C74F44DB58EEC24B2DE /* PlaybackProgressPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBED8E7104A6D8D1A1394F51 /* PlaybackProgressPolicyTests.swift */; };
+		69129FEE226BE9683E2FFC13 /* PlaybackFailureClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0E0F4DEF592D4F28564622 /* PlaybackFailureClassifierTests.swift */; };
+		8F7A24C17900486AA1A0B001 /* QoESessionRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7A24C17900486AA1A0B002 /* QoESessionRecorderTests.swift */; };
+		9A41D58E5F984E18A2261001 /* LocalHLSPlaybackIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A41D58E5F984E18A2261002 /* LocalHLSPlaybackIntegrationTests.swift */; };
 		E0F552CE46466777423406A5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A40A4D268BAC31D28D21BE5C /* Foundation.framework */; };
+		A13F089A8CB2498A817AF001 /* RetryPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13F089A8CB2498A817AF002 /* RetryPolicyTests.swift */; };
+		A13F089A8CB2498A817AF003 /* PlayerRetryCancellationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13F089A8CB2498A817AF004 /* PlayerRetryCancellationTests.swift */; };
+		A13F089A8CB2498A817AF005 /* OfflineHLSDownloadRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13F089A8CB2498A817AF006 /* OfflineHLSDownloadRecordTests.swift */; };
+		A13F089A8CB2498A817AF007 /* OfflineHLSDownloadIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13F089A8CB2498A817AF008 /* OfflineHLSDownloadIntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,17 +32,27 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A2B3C4D5E6F708192A3B4C6 /* MediaServerSettingsStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MediaServerSettingsStoreTests.swift; sourceTree = "<group>"; };
 		24C6CE29896E6117050D08FA /* PlaybackProgressStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackProgressStoreTests.swift; sourceTree = "<group>"; };
 		638590CEF1FF44669DC45B4D /* PlaybackProgressControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackProgressControllerTests.swift; sourceTree = "<group>"; };
+		7C0E0F4DEF592D4F28564622 /* PlaybackFailureClassifierTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackFailureClassifierTests.swift; sourceTree = "<group>"; };
+		8F7A24C17900486AA1A0B002 /* QoESessionRecorderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QoESessionRecorderTests.swift; sourceTree = "<group>"; };
+		9A41D58E5F984E18A2261002 /* LocalHLSPlaybackIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalHLSPlaybackIntegrationTests.swift; sourceTree = "<group>"; };
 		A40A4D268BAC31D28D21BE5C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		BF8DCF0D280DA7D0720D9159 /* BurstStreamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BurstStreamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CBED8E7104A6D8D1A1394F51 /* PlaybackProgressPolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlaybackProgressPolicyTests.swift; sourceTree = "<group>"; };
 		F20F80BF302A9C2700DA7575 /* BurstStream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BurstStream.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A13F089A8CB2498A817AF002 /* RetryPolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RetryPolicyTests.swift; sourceTree = "<group>"; };
+		A13F089A8CB2498A817AF004 /* PlayerRetryCancellationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlayerRetryCancellationTests.swift; sourceTree = "<group>"; };
+		A13F089A8CB2498A817AF006 /* OfflineHLSDownloadRecordTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfflineHLSDownloadRecordTests.swift; sourceTree = "<group>"; };
+		A13F089A8CB2498A817AF008 /* OfflineHLSDownloadIntegrationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfflineHLSDownloadIntegrationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F20F80C1302A9C2700DA7575 /* BurstStream */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = BurstStream;
 			sourceTree = "<group>";
 		};
@@ -78,9 +96,17 @@
 		377278FD05267551C1E6A785 /* BurstStreamTests */ = {
 			isa = PBXGroup;
 			children = (
+				1A2B3C4D5E6F708192A3B4C6 /* MediaServerSettingsStoreTests.swift */,
 				638590CEF1FF44669DC45B4D /* PlaybackProgressControllerTests.swift */,
 				CBED8E7104A6D8D1A1394F51 /* PlaybackProgressPolicyTests.swift */,
 				24C6CE29896E6117050D08FA /* PlaybackProgressStoreTests.swift */,
+				7C0E0F4DEF592D4F28564622 /* PlaybackFailureClassifierTests.swift */,
+				8F7A24C17900486AA1A0B002 /* QoESessionRecorderTests.swift */,
+				9A41D58E5F984E18A2261002 /* LocalHLSPlaybackIntegrationTests.swift */,
+				A13F089A8CB2498A817AF008 /* OfflineHLSDownloadIntegrationTests.swift */,
+				A13F089A8CB2498A817AF006 /* OfflineHLSDownloadRecordTests.swift */,
+				A13F089A8CB2498A817AF004 /* PlayerRetryCancellationTests.swift */,
+				A13F089A8CB2498A817AF002 /* RetryPolicyTests.swift */,
 			);
 			path = BurstStreamTests;
 			sourceTree = "<group>";
@@ -202,9 +228,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A2B3C4D5E6F708192A3B4C5 /* MediaServerSettingsStoreTests.swift in Sources */,
 				45D56FDB0B6AEC6EA0608F6E /* PlaybackProgressControllerTests.swift in Sources */,
 				5D5E1C74F44DB58EEC24B2DE /* PlaybackProgressPolicyTests.swift in Sources */,
 				3E356F96E25B52796D472923 /* PlaybackProgressStoreTests.swift in Sources */,
+				69129FEE226BE9683E2FFC13 /* PlaybackFailureClassifierTests.swift in Sources */,
+				8F7A24C17900486AA1A0B001 /* QoESessionRecorderTests.swift in Sources */,
+				9A41D58E5F984E18A2261001 /* LocalHLSPlaybackIntegrationTests.swift in Sources */,
+				A13F089A8CB2498A817AF007 /* OfflineHLSDownloadIntegrationTests.swift in Sources */,
+				A13F089A8CB2498A817AF005 /* OfflineHLSDownloadRecordTests.swift in Sources */,
+				A13F089A8CB2498A817AF003 /* PlayerRetryCancellationTests.swift in Sources */,
+				A13F089A8CB2498A817AF001 /* RetryPolicyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

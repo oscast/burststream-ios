@@ -151,11 +151,24 @@ http://192.168.1.25:8000/hls/my-video-bilingual/master.m3u8
 `localhost` on a physical iPhone, iPad, or Apple TV refers to that device, not
 the development Mac.
 
+BurstStream's **Media server** field starts at `http://localhost:8000`, which
+works in Simulator. If you later move the server to another laptop or use a
+physical device, enter the reachable base address (for example,
+`http://192.168.1.25:8000`) and select **Save media server address**. The app
+remembers it between launches. **Play Teddy Ruxpin from media server** adds
+the HLS path to that base address, so changing hosts does not require editing
+Swift source. The public sample and manually entered HLS URLs remain separate.
+
+An existing Teddy Ruxpin **Continue Watching** card keeps its saved position
+but uses the currently configured media server. Other custom streams continue
+using the exact URL with which they were saved.
+
 ## Run BurstStream
 
 1. Choose an iPhone or iPad Simulator in Xcode.
 2. Run the app.
-3. Enter the HLS master URL or use the configured local stream.
+3. Enter an HLS master URL, or configure the media server and use its Teddy
+   Ruxpin shortcut.
 4. Select **Load stream**.
 5. Open the diagnostics and experiment with quality and network controls.
 

@@ -8,14 +8,17 @@ import SwiftUI
 struct PlaybackSubtitlesView: View {
     @ObservedObject var viewModel: PlayerViewModel
 
-    private let columns = [
-        GridItem(.adaptive(minimum: 90), spacing: 8)
-    ]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var columns: [GridItem] {
+        [GridItem(.adaptive(minimum: dynamicTypeSize.isAccessibilitySize ? 240 : 90), spacing: 8)]
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Subtitles", systemImage: "captions.bubble")
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
 
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(viewModel.subtitleTracks) { track in
@@ -27,10 +30,11 @@ struct PlaybackSubtitlesView: View {
                                 Image(systemName: "checkmark.circle.fill")
                             }
 
-                            Text(track.title)
-                                .lineLimit(1)
+                            Text(localizedTitle(for: track))
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 32)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.bordered)
                     .tint(
@@ -41,7 +45,13 @@ struct PlaybackSubtitlesView: View {
                     .accessibilityLabel(
                         track.isOff
                             ? "Turn subtitles off"
-                            : "Use \(track.title) subtitles"
+                            : "Use \(localizedTitle(for: track)) subtitles"
+                    )
+                    .accessibilityValue(
+                        viewModel.selectedSubtitleTrackID == track.id ? "Selected" : "Not selected"
+                    )
+                    .accessibilityAddTraits(
+                        viewModel.selectedSubtitleTrackID == track.id ? .isSelected : []
                     )
                 }
             }
@@ -52,5 +62,17 @@ struct PlaybackSubtitlesView: View {
         }
         .padding()
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func localizedTitle(for track: SubtitleTrackOption) -> String {
+        if track.isOff {
+            return String(localized: "Off")
+        }
+
+        switch track.languageCode {
+        case "es": return String(localized: "Spanish")
+        case "en": return String(localized: "English")
+        default: return track.title
+        }
     }
 }

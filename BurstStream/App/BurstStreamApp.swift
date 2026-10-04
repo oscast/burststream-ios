@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct BurstStreamApp: App {
+    @UIApplicationDelegateAdaptor(OfflineHLSAppDelegate.self) private var appDelegate
+
     var body: some Scene {
         WindowGroup {
             ContentView()

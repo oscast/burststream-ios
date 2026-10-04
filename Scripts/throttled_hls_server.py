@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import socket
 import time
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -56,6 +57,7 @@ PROFILES = {
         "bits_per_second": None,
         "latency_seconds": 0.0,
         "offline": True,
+        "retry_after_seconds": 2,
     },
 }
 
@@ -100,7 +102,7 @@ class BurstStreamRequestHandler(SimpleHTTPRequestHandler):
 
         profile_name, profile = self.server.profile_state.get()
         if profile["offline"]:
-            self.send_error(HTTPStatus.SERVICE_UNAVAILABLE, "Network profile is offline")
+            self._send_offline_response(profile["retry_after_seconds"])
             return
 
         latency = profile["latency_seconds"]
@@ -167,6 +169,16 @@ class BurstStreamRequestHandler(SimpleHTTPRequestHandler):
             }
         )
 
+    def _send_offline_response(self, retry_after_seconds: int) -> None:
+        body = b"Network profile is offline\n"
+        self.send_response(HTTPStatus.SERVICE_UNAVAILABLE)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Retry-After", str(retry_after_seconds))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _send_json(self, payload: dict, status: HTTPStatus = HTTPStatus.OK) -> None:
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
@@ -179,6 +191,15 @@ class BurstStreamRequestHandler(SimpleHTTPRequestHandler):
 
 class BurstStreamHTTPServer(ThreadingHTTPServer):
     profile_state: ProfileState
+
+    # AVFoundation can resolve localhost to ::1 before 127.0.0.1. Use one
+    # dual-stack listener when available so both Simulator and LAN URLs work.
+    address_family = socket.AF_INET6 if socket.has_dualstack_ipv6() else socket.AF_INET
+
+    def server_bind(self) -> None:
+        if self.address_family == socket.AF_INET6:
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
 
 
 def parse_arguments() -> argparse.Namespace:

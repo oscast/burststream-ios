@@ -15,6 +15,8 @@ struct StreamPlayerView: View {
     @StateObject private var viewModel: PlayerViewModel
     @StateObject private var networkConditioner: NetworkConditionerClient
     @StateObject private var abrHistory = ABRHistoryRecorder()
+    @State private var qoeSession = QoESessionRecorder()
+    @StateObject private var qoeHistory: QoESessionHistoryStore
     @StateObject private var pictureInPicture = PictureInPictureController()
     @StateObject private var playbackLifecycle: PlaybackLifecycleController
     @StateObject private var progressController: PlaybackProgressController
@@ -36,6 +38,7 @@ struct StreamPlayerView: View {
         _networkConditioner = StateObject(
             wrappedValue: NetworkConditionerClient(streamURL: video.streamURL)
         )
+        _qoeHistory = StateObject(wrappedValue: .shared)
         _progressController = StateObject(
             wrappedValue: PlaybackProgressController(
                 source: video,
@@ -63,26 +66,42 @@ struct StreamPlayerView: View {
             viewModel.play()
             networkConditioner.refresh()
             playbackLifecycle.handleScenePhase(scenePhase)
+            recordQoEState()
+            qoeSession.recordExternalPlayback(
+                isActive: viewModel.isExternalPlaybackActive
+            )
         }
         .onDisappear {
             recordProgress(force: true)
+            qoeSession.finish()
+            qoeHistory.record(qoeSession.summary())
             viewModel.pause()
         }
         .onChange(of: viewModel.currentTime) { _, _ in
             recordProgress()
+            qoeSession.recordTimeline(
+                currentTime: viewModel.currentTime,
+                duration: viewModel.duration
+            )
         }
         .onChange(of: viewModel.playbackMetrics) { _, metrics in
             recordABRSample(metrics: metrics)
+            qoeSession.recordMetrics(metrics)
         }
         .onChange(of: networkConditioner.selectedProfile) { _, _ in
             recordABRSample(metrics: viewModel.playbackMetrics, forceTransition: true)
         }
         .onChange(of: viewModel.playbackState) { _, _ in
             recordABRSample(metrics: viewModel.playbackMetrics)
+            recordQoEState()
 
             if viewModel.playbackState == .ended {
                 progressController.clear()
+                qoeHistory.record(qoeSession.summary())
             }
+        }
+        .onChange(of: viewModel.isExternalPlaybackActive) { _, isActive in
+            qoeSession.recordExternalPlayback(isActive: isActive)
         }
         .onChange(of: viewModel.qualityLimit) { _, _ in
             recordProgress(force: true)
@@ -149,7 +168,8 @@ struct StreamPlayerView: View {
         VStack(alignment: .leading, spacing: 16) {
             PlaybackStatePanel(
                 state: viewModel.playbackState,
-                onRetry: viewModel.retry
+                failure: viewModel.playbackFailure,
+                onRetry: retryPlayback
             )
 
             AirPlayPanel(
@@ -178,6 +198,11 @@ struct StreamPlayerView: View {
             PlaybackDiagnosticsView(metrics: viewModel.playbackMetrics)
 
             ABRHistorySummaryView(recorder: abrHistory)
+
+            QoESessionSummaryView(
+                summary: qoeSession.summary(),
+                savedSessionCount: qoeHistory.sessions.count
+            )
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(video.title)
@@ -231,5 +256,17 @@ struct StreamPlayerView: View {
             ),
             force: force
         )
+    }
+
+    private func recordQoEState() {
+        qoeSession.recordState(
+            viewModel.playbackState,
+            failure: viewModel.playbackFailure
+        )
+    }
+
+    private func retryPlayback() {
+        qoeSession.recordManualRetry()
+        viewModel.retry()
     }
 }

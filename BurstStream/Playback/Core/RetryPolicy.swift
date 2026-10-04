@@ -17,9 +17,21 @@ struct RetryPolicy: Equatable {
     )
 
     /// Exponential backoff: 1, 2, 4, 8... seconds.
-    func delay(forAttempt attempt: Int) -> TimeInterval {
+    ///
+    /// A server-provided Retry-After value is a minimum. Keeping the larger
+    /// delay avoids retrying earlier than either the client or server intended.
+    func delay(
+        forAttempt attempt: Int,
+        retryAfter serverDelay: TimeInterval? = nil
+    ) -> TimeInterval {
         guard attempt > 0 else { return 0 }
-        return initialDelay * pow(2, Double(attempt - 1))
+
+        let clientDelay = initialDelay * pow(2, Double(attempt - 1))
+        guard let serverDelay, serverDelay.isFinite, serverDelay >= 0 else {
+            return clientDelay
+        }
+
+        return max(clientDelay, serverDelay)
     }
 }
 

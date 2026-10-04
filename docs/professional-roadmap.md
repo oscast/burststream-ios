@@ -79,21 +79,22 @@ every call, route disconnection, or media-server reset.
 
 ## Priority 3: Error classification and recovery
 
-BurstStream already retries item failures with exponential backoff. The next
-step is deciding which failures should be retried and what the user should see.
+BurstStream now classifies common HLS failure signals and retries only the
+categories that are normally temporary. Controlled local-server validation
+remains.
 
-- [ ] Define user-facing error categories: offline, timeout, server error,
+- [x] Define user-facing error categories: offline, timeout, server error,
       missing resource, invalid playlist, unsupported media, decoding failure,
       authorization failure, and unknown failure.
-- [ ] Separate transient failures from permanent failures.
-- [ ] Retry only transient failures.
-- [ ] Respect server guidance such as `Retry-After` when available.
-- [ ] Stop retrying when the app is intentionally offline or the item is no
-      longer active.
-- [ ] Preserve position and media selections across every recoverable rebuild.
-- [ ] Provide actionable messages and a manual Retry action.
-- [ ] Add deterministic fixtures for missing segments, malformed playlists,
-      HTTP failures, slow responses, and mid-stream disconnects.
+- [x] Separate transient failures from permanent failures.
+- [x] Retry only transient failures.
+- [x] Respect server guidance such as `Retry-After` when available.
+- [x] Stop pending retries on pause, manual retry, item reset, or player teardown.
+- [x] Preserve position and media selections across every recoverable rebuild.
+- [x] Provide actionable messages and a manual Retry action.
+- [x] Add deterministic server fixtures for missing resources, malformed
+      playlists, HTTP failures, latency, outages, and recovery.
+- [ ] Exercise a real mid-stream disconnect in the Simulator.
 
 ### Completion criteria
 
@@ -108,17 +109,17 @@ The existing diagnostics panel and ABR history are an excellent foundation.
 Add session-level Quality of Experience (QoE) metrics that can be tested and
 exported.
 
-- [ ] Assign a unique identifier to each playback session.
-- [ ] Measure time to first frame.
-- [ ] Count rebuffering events and their total duration.
-- [ ] Track startup failures and playback failures separately.
-- [ ] Track rendition changes, average bitrate, and average resolution.
-- [ ] Track watch duration, completion percentage, and successful completion.
-- [ ] Capture the final error category and relevant `AVPlayerItemErrorLog`
+- [x] Assign a unique identifier to each playback session.
+- [x] Measure time to first frame.
+- [x] Count rebuffering events and their total duration.
+- [x] Track startup failures and playback failures separately.
+- [x] Track rendition changes, average bitrate, and average resolution.
+- [x] Track watch duration, completion percentage, and successful completion.
+- [x] Capture the final error category and relevant `AVPlayerItemErrorLog`
       details.
-- [ ] Keep telemetry independent from the diagnostics UI.
-- [ ] Add a local session-history screen or JSON export for portfolio demos.
-- [ ] Avoid collecting personal data or complete signed media URLs.
+- [x] Keep telemetry independent from the diagnostics UI.
+- [x] Add a local session-history screen or JSON export for portfolio demos.
+- [x] Avoid collecting personal data or complete signed media URLs.
 
 ### Completion criteria
 
@@ -132,16 +133,16 @@ exported.
 ### Unit tests
 
 - [ ] Playback-state mapping.
-- [ ] Retry policy and cancellation.
-- [ ] Error classification.
+- [x] Retry policy and cancellation.
+- [x] Error classification.
 - [ ] Buffer-range conversion.
-- [ ] QoE calculations.
+- [x] QoE calculations.
 - [x] Continue Watching thresholds.
 - [ ] Audio and subtitle preference restoration.
 
 ### Integration tests
 
-- [ ] Successful VOD playback from a deterministic local fixture.
+- [x] Successful VOD playback from a deterministic local fixture.
 - [ ] Delayed playlist and segment responses.
 - [ ] Temporary server failure followed by recovery.
 - [ ] Missing or malformed playlist and segment responses.
@@ -166,14 +167,18 @@ exported.
 
 ## Priority 6: Accessibility and localization
 
-- [ ] Add meaningful VoiceOver labels, values, and hints to every control.
-- [ ] Give controls adequate touch targets.
-- [ ] Support Dynamic Type without covering the video or controls.
+- [x] Add meaningful VoiceOver labels, values, and hints to player and track controls.
+- [ ] Audit remaining diagnostic and launcher controls with Accessibility Inspector.
+- [x] Give controls adequate touch targets.
+- [x] Adapt player and track controls for accessibility Dynamic Type sizes.
+- [ ] Verify largest sizes at runtime in every orientation.
 - [ ] Verify focus order in portrait, landscape, and diagnostics screens.
-- [ ] Do not communicate playback state or quality using color alone.
+- [x] Do not communicate playback state or quality using color alone.
 - [ ] Respect Reduce Motion where custom animation is used.
 - [ ] Preserve closed-caption and subtitle accessibility metadata.
-- [ ] Localize user-facing strings instead of embedding them in views.
+- [x] Add English/Spanish string catalog for player, recovery, launcher,
+      QoE, and offline flows.
+- [ ] Complete string extraction and translation audit across diagnostics.
 - [ ] Test with VoiceOver on a physical device.
 
 ## Priority 7: Picture in Picture
@@ -190,13 +195,16 @@ validated on physical hardware.
 
 ## Priority 8: Offline HLS
 
-- [ ] Download HLS assets with AVFoundation's asset-download APIs.
-- [ ] Display download progress and state.
-- [ ] Pause, resume, cancel, and delete downloads.
-- [ ] Persist download records across launches.
-- [ ] Select which audio and subtitle renditions to download.
-- [ ] Check free space and handle incomplete or corrupt downloads.
-- [ ] Play a downloaded asset while the local server is unavailable.
+- [x] Download HLS assets with AVFoundation's asset-download APIs.
+- [x] Display download progress and state.
+- [x] Pause, resume, cancel, and delete downloads.
+- [x] Persist download records across launches.
+- [x] Select which audio and subtitle renditions to download.
+- [x] Check free space and reject missing/unplayable completed bundles.
+- [ ] Validate low-disk and corrupt-bundle recovery on a physical device.
+- [ ] Play a downloaded asset while the local server is unavailable (the
+      Simulator verified a local downloaded asset, but a server-off test and
+      physical-device check remain).
 - [ ] Define cleanup and expiration policies.
 
 ## Priority 9: Configuration and project operations

@@ -8,17 +8,22 @@ import SwiftUI
 struct PlaybackAudioView: View {
     @ObservedObject var viewModel: PlayerViewModel
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     // The HLS currently exposes two languages. Equal flexible columns use the
     // available width and avoid truncating the longer Spanish display name.
-    private let columns = [
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8)
-    ]
+    private var columns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: 8),
+            count: dynamicTypeSize.isAccessibilitySize ? 1 : 2
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Audio", systemImage: "waveform")
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
 
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(viewModel.audioTracks) { track in
@@ -30,14 +35,21 @@ struct PlaybackAudioView: View {
                                 Image(systemName: "checkmark.circle.fill")
                             }
 
-                            Text(track.title)
-                                .lineLimit(1)
+                            Text(localizedTitle(for: track))
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .frame(maxWidth: .infinity, minHeight: 32)
+                        .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.bordered)
                     .tint(viewModel.selectedAudioTrackID == track.id ? .purple : .secondary)
-                    .accessibilityLabel("Use \(track.title) audio")
+                    .accessibilityLabel("Use \(localizedTitle(for: track)) audio")
+                    .accessibilityValue(
+                        viewModel.selectedAudioTrackID == track.id ? "Selected" : "Not selected"
+                    )
+                    .accessibilityAddTraits(
+                        viewModel.selectedAudioTrackID == track.id ? .isSelected : []
+                    )
                 }
             }
 
@@ -47,5 +59,13 @@ struct PlaybackAudioView: View {
         }
         .padding()
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func localizedTitle(for track: AudioTrackOption) -> String {
+        switch track.languageCode {
+        case "es": String(localized: "Latin American Spanish")
+        case "en": String(localized: "English")
+        default: track.title
+        }
     }
 }

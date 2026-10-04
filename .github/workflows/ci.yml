@@ -1,0 +1,53 @@
+name: Build and test iOS app
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Select an available iPad Simulator
+        id: simulator
+        run: |
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c '
+          import json
+          import sys
+
+          devices = json.load(sys.stdin)["devices"]
+          candidates = [
+              device
+              for runtime, runtime_devices in devices.items()
+              if "iOS-27" in runtime
+              for device in runtime_devices
+              if device["name"].startswith("iPad")
+          ]
+          if not candidates:
+              sys.exit("No iOS 27 iPad Simulator is available on this runner")
+          print(candidates[0]["udid"])
+          ')"
+          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project BurstStream.xcodeproj \
+            -scheme BurstStream \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}" \
+            -parallel-testing-enabled NO \
+            -derivedDataPath "$RUNNER_TEMP/BurstStreamDerivedData" \
+            CODE_SIGNING_ALLOWED=NO

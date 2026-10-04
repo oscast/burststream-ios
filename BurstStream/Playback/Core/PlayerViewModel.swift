@@ -26,6 +26,9 @@ final class PlayerViewModel: ObservableObject {
     /// Simple snapshot of access and error logs for the current item.
     @Published private(set) var playbackMetrics: PlaybackMetrics = .empty
 
+    /// Friendly classification used by the recovery panel and diagnostics.
+    @Published private(set) var playbackFailure: PlaybackFailure?
+
     /// User-selected ceiling. Automatic preserves the normal ABR algorithm.
     @Published private(set) var qualityLimit: PlaybackQualityLimit = .automatic
 
@@ -75,6 +78,7 @@ final class PlayerViewModel: ObservableObject {
     private var retryAttempt = 0
     private var pendingResumeTime: TimeInterval?
     private var shouldPlayWhenReady = false
+    private var isUserPaused = false
 
     // AVFoundation objects stay private while the view receives lightweight
     // AudioTrackOption values.
@@ -239,6 +243,7 @@ final class PlayerViewModel: ObservableObject {
     // MARK: - User actions
 
     func play() {
+        isUserPaused = false
         if reachedEnd {
             reachedEnd = false
 
@@ -254,17 +259,21 @@ final class PlayerViewModel: ObservableObject {
     }
 
     func pause() {
+        isUserPaused = true
+        shouldPlayWhenReady = false
         player.pause()
+        cancelAutomaticRetry()
+        playbackState = .paused
     }
 
     /// Recreates AVFoundation playback objects after the system media service
     /// restarts. The restored item stays paused because a reset must not begin
     /// playback without a later user action.
     func recoverAfterMediaServicesReset() {
+        isUserPaused = true
         let resumeTime = currentTime
 
-        retryTask?.cancel()
-        retryTask = nil
+        cancelAutomaticRetry()
         audioDiscoveryTask?.cancel()
         audioDiscoveryTask = nil
         subtitleDiscoveryTask?.cancel()
@@ -303,9 +312,9 @@ final class PlayerViewModel: ObservableObject {
     /// User-requested retry after automatic retries are exhausted.
     /// Reset the counter to begin a new recovery cycle.
     func retry() {
-        retryTask?.cancel()
-        retryTask = nil
+        cancelAutomaticRetry()
         retryAttempt = 0
+        playbackFailure = nil
         reloadCurrentItem()
     }
 
@@ -496,9 +505,7 @@ final class PlayerViewModel: ObservableObject {
             let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error
 
             Task { @MainActor [weak self] in
-                self?.handlePlaybackFailure(
-                    message: error?.localizedDescription ?? "The stream could not finish playing."
-                )
+                self?.handlePlaybackFailure(error: error, item: item)
             }
         }
 
@@ -764,19 +771,35 @@ final class PlayerViewModel: ObservableObject {
 
     // MARK: - Error recovery
 
-    private func handlePlaybackFailure(message: String) {
+    func handlePlaybackFailure(error: Error?, item: AVPlayerItem? = nil) {
         guard retryTask == nil else { return }
 
+        if let item {
+            updatePlaybackMetrics(for: item)
+        }
+
+        let failure = PlaybackFailureClassifier.classify(
+            error: error,
+            errorLog: playbackMetrics.latestError
+        )
+        playbackFailure = failure
+
+        guard failure.shouldRetryAutomatically else {
+            playbackState = .failed(message: failure.message)
+            return
+        }
+
         guard retryAttempt < retryPolicy.maximumAttempts else {
-            playbackState = .failed(
-                message: "\(message) Automatic retries were exhausted. Check the server and try again."
-            )
+            playbackState = .failed(message: "\(failure.message) Automatic retries were exhausted.")
             return
         }
 
         retryAttempt += 1
         let attempt = retryAttempt
-        let delay = retryPolicy.delay(forAttempt: attempt)
+        let delay = retryPolicy.delay(
+            forAttempt: attempt,
+            retryAfter: failure.retryAfter
+        )
 
         playbackState = .retrying(
             attempt: attempt,
@@ -804,6 +827,11 @@ final class PlayerViewModel: ObservableObject {
         reloadCurrentItem()
     }
 
+    private func cancelAutomaticRetry() {
+        retryTask?.cancel()
+        retryTask = nil
+    }
+
     private func reloadCurrentItem(shouldResumePlayback: Bool = true) {
         // If the stream fails mid-episode, resume from the last known second after
         // loading the new AVPlayerItem.
@@ -820,11 +848,13 @@ final class PlayerViewModel: ObservableObject {
 
         bufferedRanges = []
         playbackMetrics = .empty
+        playbackFailure = nil
         lastMetricsRefreshDate = .distantPast
         duration = 0
         reachedEnd = false
         activeSeekID = nil
         shouldPlayWhenReady = shouldResumePlayback
+        isUserPaused = !shouldResumePlayback
         playbackState = .loading
 
         let newItem = AVPlayerItem(url: streamURL)
@@ -903,7 +933,7 @@ final class PlayerViewModel: ObservableObject {
     private func handleItemStatus(_ item: AVPlayerItem) {
         switch item.status {
         case .unknown:
-            playbackState = .loading
+            if !isUserPaused { playbackState = .loading }
         case .readyToPlay:
             updateTimeline(currentTime: player.currentTime())
             updatePlaybackMetrics(for: item)
@@ -917,15 +947,17 @@ final class PlayerViewModel: ObservableObject {
 
             updateStateFromTimeControlStatus()
         case .failed:
-            handlePlaybackFailure(
-                message: item.error?.localizedDescription ?? "AVPlayer could not load this stream."
-            )
+            handlePlaybackFailure(error: item.error, item: item)
         @unknown default:
             playbackState = .failed(message: "AVPlayer reported an unknown playback state.")
         }
     }
 
     private func handleTimeControlStatus(_ status: AVPlayer.TimeControlStatus) {
+        if isUserPaused {
+            playbackState = .paused
+            return
+        }
         guard player.currentItem?.status == .readyToPlay else {
             if player.currentItem?.status != .failed {
                 playbackState = .loading
@@ -942,6 +974,7 @@ final class PlayerViewModel: ObservableObject {
             reachedEnd = false
             hasPlayed = true
             retryAttempt = 0
+            playbackFailure = nil
             playbackState = .playing
         @unknown default:
             playbackState = .failed(message: "AVPlayer reported an unknown time-control state.")

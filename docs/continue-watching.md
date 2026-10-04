@@ -5,7 +5,7 @@ title: Continue Watching
 
 # Continue Watching
 
-[← Interruptions and lifecycle](interruptions-and-lifecycle.md) · [Documentation home](index.md) · [Next: Professional roadmap →](professional-roadmap.md)
+[← Interruptions and lifecycle](interruptions-and-lifecycle.md) · [Documentation home](index.md) · [Next: Error recovery →](error-recovery.md)
 
 Closing a player should not make the viewer remember where they stopped. A
 Continue Watching feature stores a small playback bookmark and offers to
@@ -197,4 +197,4 @@ BurstStream/App/ContentView.swift
 BurstStreamTests/
 ```
 
-[← Interruptions and lifecycle](interruptions-and-lifecycle.md) · [Next: Professional roadmap →](professional-roadmap.md)
+[← Interruptions and lifecycle](interruptions-and-lifecycle.md) · [Next: Error recovery →](error-recovery.md)

@@ -80,6 +80,14 @@ conditions.
 - Throttled periodic saves plus background and exit checkpoints
 - Unit tests for persistence, thresholds, throttling, and restoration races
 
+### Error classification and recovery
+
+- Friendly categories for connection, timeout, server, missing-resource,
+  authorization, invalid-stream, unsupported-media, and decoding failures
+- Automatic exponential backoff only for normally temporary failures
+- Manual retry and clear next-step guidance for terminal failures
+- Error-log HTTP status codes used when AVFoundation makes them available
+
 ### Local streaming tools
 
 - FFmpeg scripts for single-quality, adaptive, and bilingual HLS packaging
@@ -366,8 +374,8 @@ The published guide is available at:
 
 It covers HLS fundamentals, architecture, playback and buffering, reliability,
 ABR, network experiments, diagnostics, bilingual audio, subtitles, AirPlay,
-Picture in Picture, interruptions, Continue Watching, and reproducible study
-exercises.
+Picture in Picture, interruptions, Continue Watching, error recovery, and
+reproducible study exercises.
 
 ## Media and repository policy
 
@@ -389,7 +397,7 @@ Derived build products
 - Stale Continue Watching cleanup for deleted or replaced catalog media
 - A series-and-episodes catalog home backed by a configurable HLS server
 - External-SSD or second-laptop media hosting without hardcoded disk paths
-- Offline HLS downloads
+- Physical-device validation of offline HLS background downloads and server-off playback
 - Live-stream behavior
-- Playback analytics
+- Production-grade playback analytics and monitoring
 - FairPlay concepts
