@@ -76,7 +76,7 @@ alternate audio, and subtitles.
 | Continue Watching persistence | Yes — public sample testing available without LAN |
 | Error classification and recovery | Yes — deterministic server fixtures and Simulator tests |
 | Session QoE history and JSON export | Yes — local, privacy-limited summaries |
-| Offline downloads | Implemented for VOD; signed iPad Simulator smoke passed; physical background validation pending |
+| Offline downloads | VOD download and HTTP-503 offline playback passed on signed iPad and iPhone Simulators; physical background validation pending |
 
 ## How to use these documents
 

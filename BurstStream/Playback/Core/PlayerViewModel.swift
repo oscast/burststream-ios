@@ -73,12 +73,15 @@ final class PlayerViewModel: ObservableObject {
 
     // Cancelable task that waits before the next retry.
     private var retryTask: Task<Void, Never>?
+    private var offlinePreparationTask: Task<Void, Never>?
+    private var offlinePreparationID: UUID?
     private var audioDiscoveryTask: Task<Void, Never>?
     private var subtitleDiscoveryTask: Task<Void, Never>?
     private var retryAttempt = 0
     private var pendingResumeTime: TimeInterval?
     private var shouldPlayWhenReady = false
     private var isUserPaused = false
+    private var offlineAudioSelectionPrepared = false
 
     // AVFoundation objects stay private while the view receives lightweight
     // AudioTrackOption values.
@@ -180,9 +183,12 @@ final class PlayerViewModel: ObservableObject {
         }
 
         // AVPlayerItem represents content; AVPlayer represents the playback engine.
-        let item = AVPlayerItem(url: streamURL)
-        Self.apply(initialQualityLimit, to: item)
+        let item = streamURL.isFileURL ? nil : AVPlayerItem(url: streamURL)
+        if let item { Self.apply(initialQualityLimit, to: item) }
         player = AVPlayer(playerItem: item)
+        if streamURL.isFileURL {
+            player.appliesMediaSelectionCriteriaAutomatically = false
+        }
 
         // AVPlayer already knows how to hand an HLS URL and playback state to an
         // AirPlay receiver. These flags make that capability explicit.
@@ -190,7 +196,7 @@ final class PlayerViewModel: ObservableObject {
         PlaybackAudioSession.configure()
 
         observePlayer()
-        observe(item: item)
+        if let item { observe(item: item) }
         observeTimeline()
     }
 
@@ -220,6 +226,7 @@ final class PlayerViewModel: ObservableObject {
         }
 
         retryTask?.cancel()
+        offlinePreparationTask?.cancel()
         audioDiscoveryTask?.cancel()
         subtitleDiscoveryTask?.cancel()
 
@@ -255,12 +262,26 @@ final class PlayerViewModel: ObservableObject {
         // recommends delaying activation so merely opening a player does not
         // interrupt another app's audio.
         _ = PlaybackAudioSession.activate()
+        if streamURL.isFileURL, player.currentItem == nil {
+            shouldPlayWhenReady = true
+            prepareOfflineItem()
+            return
+        }
+        if streamURL.isFileURL, !offlineAudioSelectionPrepared,
+           let item = player.currentItem {
+            shouldPlayWhenReady = true
+            discoverAudioTracks(for: item)
+            return
+        }
         player.play()
     }
 
     func pause() {
         isUserPaused = true
         shouldPlayWhenReady = false
+        offlinePreparationTask?.cancel()
+        offlinePreparationTask = nil
+        offlinePreparationID = nil
         player.pause()
         cancelAutomaticRetry()
         playbackState = .paused
@@ -274,6 +295,9 @@ final class PlayerViewModel: ObservableObject {
         let resumeTime = currentTime
 
         cancelAutomaticRetry()
+        offlinePreparationTask?.cancel()
+        offlinePreparationTask = nil
+        offlinePreparationID = nil
         audioDiscoveryTask?.cancel()
         audioDiscoveryTask = nil
         subtitleDiscoveryTask?.cancel()
@@ -293,20 +317,25 @@ final class PlayerViewModel: ObservableObject {
         activeSeekID = nil
         pendingResumeTime = resumeTime > 0 ? resumeTime : nil
         shouldPlayWhenReady = false
+        offlineAudioSelectionPrepared = false
         playbackState = .loading
 
         PlaybackAudioSession.configure()
 
-        let newItem = AVPlayerItem(url: streamURL)
-        Self.apply(qualityLimit, to: newItem)
+        let newItem = streamURL.isFileURL ? nil : AVPlayerItem(url: streamURL)
+        if let newItem { Self.apply(qualityLimit, to: newItem) }
 
         let newPlayer = AVPlayer(playerItem: newItem)
+        if streamURL.isFileURL {
+            newPlayer.appliesMediaSelectionCriteriaAutomatically = false
+        }
         configureExternalPlayback(for: newPlayer)
         player = newPlayer
 
         observePlayer()
-        observe(item: newItem)
+        if let newItem { observe(item: newItem) }
         observeTimeline()
+        if streamURL.isFileURL { prepareOfflineItem() }
     }
 
     /// User-requested retry after automatic retries are exhausted.
@@ -559,6 +588,7 @@ final class PlayerViewModel: ObservableObject {
                 // Audio selection is optional, so failure to discover a group
                 // should not fail otherwise valid video playback.
                 self.clearAudioTracks()
+                self.finishOfflineAudioPreparation(for: item)
             }
         }
     }
@@ -590,6 +620,7 @@ final class PlayerViewModel: ObservableObject {
     ) {
         guard let group else {
             clearAudioTracks()
+            finishOfflineAudioPreparation(for: item)
             return
         }
 
@@ -622,6 +653,7 @@ final class PlayerViewModel: ObservableObject {
            let preferredOption = optionMap[preferredTrack.id] {
             item.select(preferredOption, in: group)
             selectedAudioTrackID = preferredTrack.id
+            finishOfflineAudioPreparation(for: item)
             return
         }
 
@@ -637,6 +669,74 @@ final class PlayerViewModel: ObservableObject {
         selectedAudioTrackID = tracks.first(where: { track in
             optionMap[track.id] === initialMediaOption
         })?.id ?? tracks.first?.id
+        finishOfflineAudioPreparation(for: item)
+    }
+
+    private func finishOfflineAudioPreparation(for item: AVPlayerItem) {
+        guard streamURL.isFileURL, player.currentItem === item else { return }
+        offlineAudioSelectionPrepared = true
+        if shouldPlayWhenReady, !isUserPaused {
+            shouldPlayWhenReady = false
+            player.play()
+        }
+    }
+
+    /// Select downloaded renditions before attaching the item to AVPlayer.
+    /// Otherwise AVPlayer may request an undownloaded system-language track
+    /// from the original server even when the local cache reports playable.
+    private func prepareOfflineItem() {
+        guard streamURL.isFileURL, offlinePreparationTask == nil else { return }
+        let preparationID = UUID()
+        offlinePreparationID = preparationID
+        offlinePreparationTask = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                if self.offlinePreparationID == preparationID {
+                    self.offlinePreparationTask = nil
+                    self.offlinePreparationID = nil
+                }
+            }
+            do {
+                let asset = AVURLAsset(url: self.streamURL)
+                async let audioGroup = asset.loadMediaSelectionGroup(for: .audible)
+                async let subtitleGroup = asset.loadMediaSelectionGroup(for: .legible)
+                let (audio, subtitles) = try await (audioGroup, subtitleGroup)
+                guard !Task.isCancelled else { return }
+
+                let item = AVPlayerItem(asset: asset)
+                if let audio {
+                    let preferred = self.preferredAudioLanguageCode.flatMap { language in
+                        audio.options.first(where: {
+                            self.normalizedLanguageCode(for: $0) == language
+                        })
+                    }
+                    let option = preferred ?? audio.defaultOption
+                    if let option { item.select(option, in: audio) }
+                }
+                if let subtitles {
+                    let option = self.preferredSubtitleLanguageCode.flatMap { language in
+                        subtitles.options.first(where: {
+                            self.normalizedLanguageCode(for: $0) == language
+                        })
+                    }
+                    item.select(option, in: subtitles)
+                }
+
+                Self.apply(self.qualityLimit, to: item)
+                self.offlineAudioSelectionPrepared = true
+                self.player.replaceCurrentItem(with: item)
+                self.observe(item: item)
+                if self.shouldPlayWhenReady, !self.isUserPaused {
+                    self.shouldPlayWhenReady = false
+                    self.player.play()
+                }
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.playbackState = .failed(
+                    message: "The downloaded video could not be prepared for offline playback."
+                )
+            }
+        }
     }
 
     private func audioTrackTitle(languageCode: String?, fallback: String) -> String {
@@ -838,6 +938,9 @@ final class PlayerViewModel: ObservableObject {
         pendingResumeTime = currentTime > 0 ? currentTime : nil
 
         player.pause()
+        offlinePreparationTask?.cancel()
+        offlinePreparationTask = nil
+        offlinePreparationID = nil
         stopObservingCurrentItem()
         audioDiscoveryTask?.cancel()
         audioDiscoveryTask = nil
@@ -855,7 +958,14 @@ final class PlayerViewModel: ObservableObject {
         activeSeekID = nil
         shouldPlayWhenReady = shouldResumePlayback
         isUserPaused = !shouldResumePlayback
+        offlineAudioSelectionPrepared = false
         playbackState = .loading
+
+        if streamURL.isFileURL {
+            player.replaceCurrentItem(with: nil)
+            prepareOfflineItem()
+            return
+        }
 
         let newItem = AVPlayerItem(url: streamURL)
         // A retry creates a new item, so reapply the selected ceiling.
@@ -940,7 +1050,8 @@ final class PlayerViewModel: ObservableObject {
             discoverAudioTracks(for: item)
             discoverSubtitleTracks(for: item)
 
-            if shouldPlayWhenReady {
+            if shouldPlayWhenReady,
+               (!streamURL.isFileURL || offlineAudioSelectionPrepared) {
                 shouldPlayWhenReady = false
                 player.play()
             }

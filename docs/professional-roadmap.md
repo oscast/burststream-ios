@@ -202,9 +202,9 @@ validated on physical hardware.
 - [x] Select which audio and subtitle renditions to download.
 - [x] Check free space and reject missing/unplayable completed bundles.
 - [ ] Validate low-disk and corrupt-bundle recovery on a physical device.
-- [ ] Play a downloaded asset while the local server is unavailable (the
-      Simulator verified a local downloaded asset, but a server-off test and
-      physical-device check remain).
+- [x] Play a downloaded asset while the local server returns HTTP 503 in the
+      Simulator, including a non-default audio choice.
+- [ ] Verify offline playback with the device's network radios disabled.
 - [ ] Define cleanup and expiration policies.
 
 ## Priority 9: Configuration and project operations

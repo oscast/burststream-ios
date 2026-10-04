@@ -205,7 +205,10 @@ struct ContentView: View {
     private func continueWatching(_ progress: PlaybackProgress) {
         playbackRequest = PlaybackRequest(
             source: sourceUsingCurrentMediaServer(progress.source),
-            restoration: progress.restorationState
+            restoration: restorationForOffline(
+                id: progress.streamID,
+                existing: progress.restorationState
+            )
         )
     }
 
@@ -213,7 +216,7 @@ struct ContentView: View {
         progressStore.removeProgress(for: progress.streamID)
         playbackRequest = PlaybackRequest(
             source: sourceUsingCurrentMediaServer(progress.source),
-            restoration: nil
+            restoration: restorationForOffline(id: progress.streamID, existing: nil)
         )
     }
 
@@ -250,7 +253,27 @@ struct ContentView: View {
                 subtitle: "Downloaded for offline playback",
                 streamURL: localURL
             ),
-            restoration: progressStore.progress(for: record.id)?.restorationState
+            restoration: restorationForOffline(
+                id: record.id,
+                existing: progressStore.progress(for: record.id)?.restorationState
+            )
+        )
+    }
+
+    private func restorationForOffline(
+        id: String,
+        existing: PlaybackRestorationState?
+    ) -> PlaybackRestorationState? {
+        guard let record = offlineManager.record(for: id),
+              offlineManager.playableURL(for: id) != nil else {
+            return existing
+        }
+        return PlaybackRestorationState(
+            position: existing?.position ?? 0,
+            qualityLimit: existing?.qualityLimit ?? .automatic,
+            audioLanguageCode: record.audioLanguageCode,
+            subtitlesEnabled: record.subtitleLanguageCode != nil,
+            subtitleLanguageCode: record.subtitleLanguageCode
         )
     }
 }
